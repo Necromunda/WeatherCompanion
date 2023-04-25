@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/weather_service.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:loading_indicator/loading_indicator.dart';
 
 import '../widgets/daily_weather.dart';
 import '../widgets/weekly_weather.dart';
+
+enum PermissionState {
+  allowed,
+  denied,
+}
 
 class Frontpage extends StatefulWidget {
   const Frontpage({Key? key}) : super(key: key);
@@ -17,46 +26,115 @@ class Frontpage extends StatefulWidget {
 
 class _FrontpageState extends State<Frontpage> {
   WeatherModel? _weatherModel;
+  Position? _currentPosition;
+  PermissionState _permissionState = PermissionState.denied;
+  final Position _kOulu = Position(
+      longitude: 25.473821,
+      latitude: 65.060823,
+      timestamp: DateTime.now(),
+      accuracy: 1,
+      altitude: 1,
+      heading: 0,
+      speed: 0,
+      speedAccuracy: 0);
 
   @override
   void initState() {
     super.initState();
-    _initPlatformState();
+    // _initPlatformState();
+    _getCurrentPosition();
   }
 
-  void _initPlatformState() => _getData();
+  // void _initPlatformState() async {
+  //   _getCurrentPosition();
+  // }
 
-  _currentLocationButtonHandler() => null;
+  Future<void> _getCurrentPosition() async {
+    setState(() => _weatherModel = null);
+    final hasPermission = await _handleLocationPermission();
+    if (!hasPermission) return;
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      print(position);
+      _getData(position);
+      // setState(() => _currentPosition = position);
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
 
-  void _refreshButtonHandler() => _getData();
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
 
-  void _searchButtonHandler() async {
-    String url =
-        "http://api.openweathermap.org/data/2.5/weather?units=metric&q=Oulu,fi&APPID=${WeatherService.apiKey}";
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      WeatherModel.createWeatherModel(jsonDecode(response.body))
-          .then((model) async {
-        setState(() {
-          _weatherModel = model;
-        });
-      });
-    } else {
-      print("Error getting weather data");
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location services are disabled. Please enable the services')));
+      return false;
     }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.')));
+      return false;
+    }
+    return true;
   }
 
-  void _getData() async {
-    WeatherService.getWeather().then((data) async {
-      WeatherModel.createWeatherModel(data).then((model) async {
-        setState(() {
-          _weatherModel = model;
-        });
+  void _refreshButtonHandler() => _getCurrentPosition();
 
-        print(
-            "Weather for ${_weatherModel!.city}, ${_weatherModel!.countryCode}\nSunrise at ${_weatherModel!.sunrise}\nSunset at ${_weatherModel!.sunset}");
+  // Future<void> _requestPermission(BuildContext context, Function fn) async {
+  //   const Permission locationPermission = Permission.location;
+  //   bool locationStatus = false;
+  //   bool isPermanentlyDenied = await locationPermission.isPermanentlyDenied;
+  //   if (isPermanentlyDenied) {
+  //     await openAppSettings();
+  //   } else {
+  //     var location_statu = await locationPermission.request();
+  //     location_status = location_statu.isGranted;
+  //     print(location_status);
+  //   }
+  // }
+
+  void _getData(Position position) async {
+    WeatherService.getWeatherByCoords(position).then((data) async {
+      setState(() {
+        _weatherModel = data;
       });
     });
+  }
+
+  Widget get _loadingWeatherData {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          SizedBox(
+            width: 75,
+            height: 75,
+            child: LoadingIndicator(
+              indicatorType: Indicator.ballRotateChase,
+              colors: [Colors.white],
+              strokeWidth: 2,
+              // backgroundColor: Colors.black,
+              // pathBackgroundColor: Colors.black
+            ),
+          ),
+          Text("Loading weather data"),
+        ],
+      ),
+    );
   }
 
   @override
@@ -79,9 +157,7 @@ class _FrontpageState extends State<Frontpage> {
         children: <Widget>[
           Expanded(
             child: _weatherModel == null
-                ? const Center(
-                    child: Text("Loading weather data"),
-                  )
+                ? _loadingWeatherData
                 : DailyWeather(weatherModel: _weatherModel!),
           ),
           Expanded(
@@ -93,19 +169,14 @@ class _FrontpageState extends State<Frontpage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           FloatingActionButton(
-            onPressed: _currentLocationButtonHandler,
-            tooltip: "Current location",
-            child: const Icon(Icons.my_location_outlined),
-          ),
-          FloatingActionButton(
             onPressed: _refreshButtonHandler,
             tooltip: "Refresh",
             child: const Icon(Icons.refresh),
           ),
           FloatingActionButton(
-            onPressed: _searchButtonHandler,
-            tooltip: "Select location",
-            child: const Icon(Icons.search),
+            onPressed: () => _getData(_kOulu),
+            tooltip: "Current",
+            child: const Icon(Icons.location_searching),
           ),
         ],
       ),

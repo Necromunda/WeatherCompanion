@@ -10,22 +10,6 @@ void main() {
   runApp(const MyApp());
 }
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: "Weather companion",
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//         // colorScheme: ColorScheme(background: Colors.indigoAccent),
-//       ),
-//       home: const MyHomePage(),
-//     );
-//   }
-// }
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -37,21 +21,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    checkPermissions();
-  }
-
-  Future<void> checkPermissions() async {
-    PermissionStatus locationStatus = await Permission.location.status;
-    if (locationStatus != PermissionStatus.granted) {
-      requestPermissions();
-    }
-  }
-
-  Future<void> requestPermissions() async {
-    PermissionStatus locationStatus = await Permission.location.request();
-    if (locationStatus == PermissionStatus.denied) {
-      SystemNavigator.pop();
-    }
   }
 
   @override
@@ -67,6 +36,7 @@ class _MyAppState extends State<MyApp> {
           bodyMedium: TextStyle(fontSize: 14.0),
         ),
       ),
+      debugShowCheckedModeBanner: false,
       home: const Frontpage(),
     );
   }

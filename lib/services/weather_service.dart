@@ -1,12 +1,14 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:weather_app/models/weather_model.dart';
 
 class WeatherService {
   static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
   static const Map<String, dynamic> _weatherData = {
-    "coord": {
-      "lon": 25.4682,
-      "lat": 65.0124
-    },
+    "coord": {"lon": 25.4682, "lat": 65.0124},
     "weather": [
       {
         "id": 803,
@@ -25,13 +27,8 @@ class WeatherService {
       "humidity": 65
     },
     "visibility": 10000,
-    "wind": {
-      "speed": 5.14,
-      "deg": 60
-    },
-    "clouds": {
-      "all": 75
-    },
+    "wind": {"speed": 5.14, "deg": 60},
+    "clouds": {"all": 75},
     "dt": 1682342244,
     "sys": {
       "type": 2,
@@ -46,7 +43,30 @@ class WeatherService {
     "cod": 200
   };
 
-  static Future<Map<String, dynamic>> getWeather() async {
-    return Future(() => _weatherData);
+  static Future<WeatherModel?> getWeatherByCity(String city) async {
+    final String url =
+        "http://api.openweathermap.org/data/2.5/weather?units=metric&q=$city&APPID=$apiKey";
+    var response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      WeatherModel? model = await WeatherModel.createWeatherModel(jsonDecode(response.body));
+      return model;
+    } else {
+      print("Error getting weather data");
+      return null;
+    }
+  }
+
+  static Future<WeatherModel?> getWeatherByCoords(Position position) async {
+    final String url =
+        "http://api.openweathermap.org/data/2.5/weather?units=metric&lat=${position.latitude}&lon=${position.longitude}&APPID=$apiKey";
+    print(url);
+    var response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      WeatherModel? model = await WeatherModel.createWeatherModel(jsonDecode(response.body));
+      return model;
+    } else {
+      print("Error getting weather data");
+      return null;
+    }
   }
 }

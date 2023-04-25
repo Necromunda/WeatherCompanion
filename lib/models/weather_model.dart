@@ -1,9 +1,27 @@
 import 'package:intl/intl.dart';
 
 class WeatherModel {
-  double? lat, lon, temp, tempFeelsLike, tempMin, tempMax, windSpeed;
-  int? pressure, humidity, visibility, windDeg;
-  String? weatherType, weatherTypeDescription, icon, city, countryCode, sunrise, sunset, iconUrl;
+  double? lat,
+      lon,
+      temp,
+      tempFeelsLike,
+      tempMin,
+      tempMax,
+      windSpeed,
+      pressure,
+      humidity,
+      visibility,
+      windDeg;
+
+  // int? pressure, humidity, visibility, windDeg;
+  String? weatherType,
+      weatherTypeDescription,
+      icon,
+      city,
+      countryCode,
+      sunrise,
+      sunset,
+      iconUrl;
 
   WeatherModel({
     this.lat,
@@ -27,31 +45,36 @@ class WeatherModel {
     this.iconUrl,
   });
 
-  static Future<WeatherModel?> createWeatherModel(final Map<String, dynamic> data) async {
-    DateTime sunr = DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
-    DateTime suns = DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
+  static Future<WeatherModel?> createWeatherModel(
+      final Map<String, dynamic> data) async {
+    DateTime sunr =
+        DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
+    DateTime suns =
+        DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
+    print(data["wind"]["deg"]);
 
     try {
       return WeatherModel(
-        lat: data["coord"]["lat"],
-        lon: data["coord"]["lon"],
+        lat: data["coord"]["lat"].toDouble(),
+        lon: data["coord"]["lon"].toDouble(),
         weatherType: data["weather"][0]["main"],
         weatherTypeDescription: data["weather"][0]["description"],
         icon: data["weather"][0]["icon"],
-        temp: data["main"]["temp"],
-        tempFeelsLike: data["main"]["feels_like"],
-        tempMin: data["main"]["temp_min"],
-        tempMax: data["main"]["temp_max"],
-        pressure: data["main"]["pressure"],
-        humidity: data["main"]["humidity"],
-        visibility: data["visibility"],
-        windSpeed: data["wind"]["speed"],
-        windDeg: data["wind"]["deg"],
+        temp: data["main"]["temp"].toDouble(),
+        tempFeelsLike: data["main"]["feels_like"].toDouble(),
+        tempMin: data["main"]["temp_min"].toDouble(),
+        tempMax: data["main"]["temp_max"].toDouble(),
+        pressure: data["main"]["pressure"].toDouble(),
+        humidity: data["main"]["humidity"].toDouble(),
+        visibility: data["visibility"].toDouble(),
+        windSpeed: data["wind"]["speed"].toDouble(),
+        windDeg: data["wind"]["deg"].toDouble(),
         countryCode: data["sys"]["country"],
         sunrise: DateFormat("HH:mm").format(sunr),
         sunset: DateFormat("HH:mm").format(suns),
         city: data["name"],
-        iconUrl: "https://openweathermap.org/img/wn/${data["weather"][0]["icon"]}@2x.png",
+        iconUrl:
+            "https://openweathermap.org/img/wn/${data["weather"][0]["icon"]}@2x.png",
       );
     } catch (e) {
       print(e);

@@ -39,6 +39,10 @@ dependencies:
   permission_handler: ^10.2.0
   http: ^0.13.5
   scaffold_gradient_background: ^1.0.3+1
+  wheel_chooser: ^1.1.2
+  geolocator: ^9.0.2
+  geocoding: ^2.1.0
+  loading_indicator: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -63,9 +67,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/cloud.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
