@@ -156,11 +156,21 @@ class _FrontpageState extends State<Frontpage> {
       body: Column(
         children: <Widget>[
           Expanded(
+            flex: 2,
             child: _weatherModel == null
-                ? _loadingWeatherData
-                : DailyWeather(weatherModel: _weatherModel!),
+                ? Container(
+                    decoration:
+                        BoxDecoration(border: Border.all(color: Colors.red)),
+                    child: _loadingWeatherData,
+                  )
+                : Container(
+                    decoration:
+                        BoxDecoration(border: Border.all(color: Colors.red)),
+                    child: DailyWeather(weatherModel: _weatherModel!),
+                  ),
           ),
           Expanded(
+            // flex: 3,
             child: WeeklyWeather(weatherModel: _weatherModel),
           ),
         ],
