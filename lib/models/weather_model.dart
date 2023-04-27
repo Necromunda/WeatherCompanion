@@ -23,6 +23,8 @@ class WeatherModel {
       sunset,
       iconUrl;
 
+  bool isFavorite;
+
   WeatherModel({
     this.lat,
     this.lon,
@@ -43,7 +45,10 @@ class WeatherModel {
     this.city,
     this.countryCode,
     this.iconUrl,
+    required this.isFavorite,
   });
+
+  String get currentCity => "$city, $countryCode";
 
   static Future<WeatherModel?> createWeatherModel(
       final Map<String, dynamic> data) async {
@@ -75,6 +80,7 @@ class WeatherModel {
         city: data["name"],
         iconUrl:
             "https://openweathermap.org/img/wn/${data["weather"][0]["icon"]}@2x.png",
+        isFavorite: false,
       );
     } catch (e) {
       print(e);

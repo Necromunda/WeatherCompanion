@@ -26,38 +26,24 @@ class Frontpage extends StatefulWidget {
 
 class _FrontpageState extends State<Frontpage> {
   WeatherModel? _weatherModel;
-  Position? _currentPosition;
-  PermissionState _permissionState = PermissionState.denied;
-  final Position _kOulu = Position(
-      longitude: 25.473821,
-      latitude: 65.060823,
-      timestamp: DateTime.now(),
-      accuracy: 1,
-      altitude: 1,
-      heading: 0,
-      speed: 0,
-      speedAccuracy: 0);
+  bool _isLocationEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    // _initPlatformState();
     _getCurrentPosition();
   }
 
-  // void _initPlatformState() async {
-  //   _getCurrentPosition();
-  // }
-
   Future<void> _getCurrentPosition() async {
     setState(() => _weatherModel = null);
-    final hasPermission = await _handleLocationPermission();
-    if (!hasPermission) return;
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+    _isLocationEnabled = await _handleLocationPermission();
+    setState(() {});
+    if (!_isLocationEnabled) return;
+    print("hello");
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((Position position) {
       print(position);
       _getData(position);
-      // setState(() => _currentPosition = position);
     }).catchError((e) {
       debugPrint(e);
     });
@@ -78,12 +64,14 @@ class _FrontpageState extends State<Frontpage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        // setState(() => _isLocationEnabled = false);
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Location permissions are denied')));
         return false;
       }
     }
     if (permission == LocationPermission.deniedForever) {
+      // setState(() => _isLocationEnabled = false);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
               'Location permissions are permanently denied, we cannot request permissions.')));
@@ -92,23 +80,8 @@ class _FrontpageState extends State<Frontpage> {
     return true;
   }
 
-  void _refreshButtonHandler() => _getCurrentPosition();
-
-  // Future<void> _requestPermission(BuildContext context, Function fn) async {
-  //   const Permission locationPermission = Permission.location;
-  //   bool locationStatus = false;
-  //   bool isPermanentlyDenied = await locationPermission.isPermanentlyDenied;
-  //   if (isPermanentlyDenied) {
-  //     await openAppSettings();
-  //   } else {
-  //     var location_statu = await locationPermission.request();
-  //     location_status = location_statu.isGranted;
-  //     print(location_status);
-  //   }
-  // }
-
   void _getData(Position position) async {
-    WeatherService.getWeatherByCoords(position).then((data) async {
+    WeatherService.getWeatherByCoords(position).then((data) {
       setState(() {
         _weatherModel = data;
       });
@@ -127,8 +100,6 @@ class _FrontpageState extends State<Frontpage> {
               indicatorType: Indicator.ballRotateChase,
               colors: [Colors.white],
               strokeWidth: 2,
-              // backgroundColor: Colors.black,
-              // pathBackgroundColor: Colors.black
             ),
           ),
           Text("Loading weather data"),
@@ -140,6 +111,7 @@ class _FrontpageState extends State<Frontpage> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldGradientBackground(
+      resizeToAvoidBottomInset: false,
       gradient: const LinearGradient(
         begin: Alignment.bottomLeft,
         end: Alignment.topRight,
@@ -157,16 +129,23 @@ class _FrontpageState extends State<Frontpage> {
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: _weatherModel == null
-                ? Container(
-                    decoration:
-                        BoxDecoration(border: Border.all(color: Colors.red)),
-                    child: _loadingWeatherData,
-                  )
+            child: _isLocationEnabled
+                ? _weatherModel == null
+                    ? Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red)),
+                        child: _loadingWeatherData,
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red)),
+                        child: DailyWeather(weatherModel: _weatherModel),
+                      )
                 : Container(
                     decoration:
                         BoxDecoration(border: Border.all(color: Colors.red)),
-                    child: DailyWeather(weatherModel: _weatherModel!),
+                    child: DailyWeather(weatherModel: null),
                   ),
           ),
           Expanded(
@@ -175,22 +154,6 @@ class _FrontpageState extends State<Frontpage> {
           ),
         ],
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FloatingActionButton(
-            onPressed: _refreshButtonHandler,
-            tooltip: "Refresh",
-            child: const Icon(Icons.refresh),
-          ),
-          FloatingActionButton(
-            onPressed: () => _getData(_kOulu),
-            tooltip: "Current",
-            child: const Icon(Icons.location_searching),
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
