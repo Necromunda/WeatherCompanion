@@ -52,13 +52,15 @@ class WeatherModel {
 
   static Future<WeatherModel?> createWeatherModel(
       final Map<String, dynamic> data) async {
-    DateTime sunr =
-        DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
-    DateTime suns =
-        DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
-    print(data["wind"]["deg"]);
-
     try {
+      DateTime sunr =
+      DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
+      DateTime suns =
+      DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
+      // print(data["wind"]["deg"]);
+      DateTime dt = DateTime.fromMillisecondsSinceEpoch(data["dt"] * 1000);
+      print(dt);
+
       return WeatherModel(
         lat: data["coord"]["lat"].toDouble(),
         lon: data["coord"]["lon"].toDouble(),
@@ -86,5 +88,30 @@ class WeatherModel {
       print(e);
       return null;
     }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "lat": lat,
+      "lon": lon,
+      "weatherType": weatherType,
+      "weatherTypeDescription": weatherTypeDescription,
+      "icon": icon,
+      "temp": temp,
+      "tempFeelsLike": tempFeelsLike,
+      "tempMin": tempMin,
+      "tempMax": tempMax,
+      "pressure": pressure,
+      "humidity": humidity,
+      "visibility": visibility,
+      "windSpeed": windSpeed,
+      "windDeg": windDeg,
+      "countryCode": countryCode,
+      "sunrise": sunrise,
+      "sunset": sunset,
+      "city": city,
+      "iconUrl": iconUrl,
+      "isFavorite": isFavorite,
+    };
   }
 }

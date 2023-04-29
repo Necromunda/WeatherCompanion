@@ -1,24 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/weather_service.dart';
+import 'package:weather_app/util.dart';
 import 'package:weather_app/widgets/cities.dart';
+import 'package:weather_app/widgets/weekly_weather.dart';
 import 'package:wheel_chooser/wheel_chooser.dart';
 
 class DailyWeather extends StatefulWidget {
-  final WeatherModel? weatherModel;
+  final bool locationPermission;
 
-  const DailyWeather({Key? key, required this.weatherModel}) : super(key: key);
+  // final WeatherModel? data;
+
+  const DailyWeather({
+    Key? key,
+    required this.locationPermission,
+    // required this.data,
+  }) : super(key: key);
 
   @override
   State<DailyWeather> createState() => _DailyWeatherState();
 }
 
 class _DailyWeatherState extends State<DailyWeather> {
-  late WeatherModel? _weatherModel = widget.weatherModel;
+  // WeatherModel? _weatherModel;
   bool _flipCard = false;
   List<WeatherModel> _favoriteCities = [];
   final TextEditingController _textFieldController = TextEditingController();
+  late final bool _locationPermission = widget.locationPermission;
+  late WeatherModel? _weatherModel = null;
+  static const List<String> _directions = [
+    'north',
+    'northeast',
+    'east',
+    'southeast',
+    'south',
+    'southwest',
+    'west',
+    'northwest'
+  ];
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initPlatformState();
+    print("dailyweather initstate");
+  }
+
+  void _initPlatformState() async {
+    final data = await _getCurrentPositionWeather();
+    if (data != null) Util.saveToPrefs("data", data);
+    setState(() => _weatherModel = data);
+  }
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
     return showDialog(
@@ -38,6 +80,7 @@ class _DailyWeatherState extends State<DailyWeather> {
                     _getData(_textFieldController.text);
                     Navigator.pop(context);
                   });
+                  _textFieldController.clear();
                 },
                 icon: const Icon(
                   Icons.search,
@@ -71,15 +114,6 @@ class _DailyWeatherState extends State<DailyWeather> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _initPlatformState();
-    print("initstate");
-  }
-
-  void _initPlatformState() {}
-
   void _addToFavorites(WeatherModel? model) {
     if (model != null) {
       if (!_favoriteCities.contains(model)) {
@@ -108,185 +142,293 @@ class _DailyWeatherState extends State<DailyWeather> {
     });
   }
 
+  Future<WeatherModel?> _getCurrentPositionWeather() async {
+    if (!_locationPermission) return null;
+    Position pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    WeatherModel? model = await WeatherService.getWeatherByCoords(pos);
+    return model;
+  }
+
+  // void _getDataPos(Position position) {
+  //   WeatherService.getWeatherByCoords(position).then((data) {
+  //     setState(() {
+  //       _weatherModel = data;
+  //     });
+  //   });
+  // }
+
+  Widget get _loadingWeatherData {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          SizedBox(
+            width: 75,
+            height: 75,
+            child: LoadingIndicator(
+              indicatorType: Indicator.ballRotateChase,
+              colors: [Colors.white],
+              strokeWidth: 2,
+            ),
+          ),
+          Text("Loading weather data"),
+        ],
+      ),
+    );
+  }
+
+  String _convertDegreesToText(double deg) {
+    int degrees = (deg * 8 / 360).round();
+    degrees = (degrees + 8) % 8;
+    return _directions[degrees];
+  }
+
   @override
   Widget build(BuildContext context) {
     print("rebuilding daily weather");
-    return _weatherModel == null
-        ? Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.black, width: 3.0),
-          bottom: BorderSide(color: Colors.black, width: 3.0),
-        ),
-      ),
-      child: GestureDetector(
-        onTap: _cityGestureHandler,
-        child: const Text(
-          "Tap to search a city",
-          style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
-        ),
-      ),
-    )
-        : Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.black, width: 3.0),
-                  bottom: BorderSide(color: Colors.black, width: 3.0),
+    return !_locationPermission && _weatherModel == null
+        ? Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 30.0),
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  child: Image.asset("assets/images/cloud_colored4.png"),
                 ),
               ),
-              child: GestureDetector(
+              GestureDetector(
                 onTap: _cityGestureHandler,
-                child: Text(
-                  _weatherModel!.currentCity,
-                  style: const TextStyle(
-                      fontSize: 35, fontWeight: FontWeight.bold),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: Colors.black, width: 3.0),
+                      bottom: BorderSide(color: Colors.black, width: 3.0),
+                    ),
+                  ),
+                  child: const Text(
+                    "Tap to search",
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            IconButton(
-              onPressed: () => _addToFavorites(_weatherModel),
-              icon: Icon(
-                _weatherModel!.isFavorite
-                    ? Icons.star
-                    : Icons.star_outline,
-                size: 35,
-              ),
-              color:
-              _weatherModel!.isFavorite ? Colors.yellow : Colors.grey,
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                // ..._titles.map((e) => e),
-                Text(
-                  "Min",
-                  style: TextStyle(fontSize: 15),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    "Current",
-                    style: TextStyle(fontSize: 20),
+            ],
+          )
+        : _weatherModel == null
+            ? _loadingWeatherData
+            : Column(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      top: BorderSide(
+                                          color: Colors.black, width: 3.0),
+                                      bottom: BorderSide(
+                                          color: Colors.black, width: 3.0),
+                                    ),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: _cityGestureHandler,
+                                    child: Text(
+                                      _weatherModel!.currentCity,
+                                      style: const TextStyle(
+                                          fontSize: 35,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                                // IconButton(
+                                //   onPressed: () => _addToFavorites(_weatherModel),
+                                //   icon: Icon(
+                                //     _weatherModel!.isFavorite
+                                //         ? Icons.star
+                                //         : Icons.star_outline,
+                                //     size: 35,
+                                //   ),
+                                //   color:
+                                //       _weatherModel!.isFavorite ? Colors.yellow : Colors.grey,
+                                // ),
+                              ],
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(top: 15.0),
+                              child: Text(
+                                DateFormat.MMMMEEEEd().format(DateTime.now()),
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            )
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                // ..._titles.map((e) => e),
+                                Text(
+                                  "Min",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Text(
+                                    "Current",
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                ),
+                                Text(
+                                  "Max",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // ..._temps.map((e) => e),
+                                Text(
+                                  "${(_weatherModel?.tempMin)?.round()}°C",
+                                  style: const TextStyle(fontSize: 25),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
+                                  child: Text(
+                                    "${(_weatherModel?.temp)?.round()}°C",
+                                    style: const TextStyle(fontSize: 40),
+                                  ),
+                                ),
+                                Text(
+                                  "${(_weatherModel?.tempMax)?.round()}°C",
+                                  style: const TextStyle(fontSize: 25),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              "Feels like ${(_weatherModel?.tempFeelsLike)?.round()}°C",
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            GestureDetector(
+                              onTap: _gestureDetectorHandler,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.black)),
+                                width: MediaQuery.of(context).size.width,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2,
+                                child: !_flipCard
+                                    ? Column(
+                                        children: [
+                                          Image.network(
+                                              _weatherModel!.iconUrl!),
+                                          Text(
+                                            "${toBeginningOfSentenceCase(_weatherModel?.weatherTypeDescription)}",
+                                            style:
+                                                const TextStyle(fontSize: 20),
+                                          ),
+                                        ],
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 5.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: const [
+                                                // ..._statTitles.map((e) => e),
+                                                Text(
+                                                  "Visibility",
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                ),
+                                                Text(
+                                                  "Air pressure",
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                ),
+                                                Text(
+                                                  "Humidity",
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                ),
+                                                Text(
+                                                  "Wind direction",
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 5.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                // ..._statValues.map((e) => e),
+                                                Text(
+                                                  "${(_weatherModel!.visibility! / 1000).round()} km",
+                                                  style: const TextStyle(
+                                                      fontSize: 18),
+                                                ),
+                                                Text(
+                                                  "${(_weatherModel?.pressure)} hpa",
+                                                  style: const TextStyle(
+                                                      fontSize: 18),
+                                                ),
+                                                Text(
+                                                  "${(_weatherModel?.humidity)} %",
+                                                  style: const TextStyle(
+                                                      fontSize: 18),
+                                                ),
+                                                Text(
+                                                  _convertDegreesToText(
+                                                      _weatherModel!.windDeg!),
+                                                  style: const TextStyle(
+                                                      fontSize: 18),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Text(
-                  "Max",
-                  style: TextStyle(fontSize: 15),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // ..._temps.map((e) => e),
-                Text(
-                  "${(_weatherModel?.tempMin)?.round()}°C",
-                  style: const TextStyle(fontSize: 25),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    "${(_weatherModel?.temp)?.round()}°C",
-                    style: const TextStyle(fontSize: 40),
+                  Expanded(
+                    child: Container(
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.red)),
+                      child: WeeklyWeather(
+                        hasLocationPermission: _locationPermission,
+                      ),
+                    ),
                   ),
-                ),
-                Text(
-                  "${(_weatherModel?.tempMax)?.round()}°C",
-                  style: const TextStyle(fontSize: 25),
-                ),
-              ],
-            ),
-          ],
-        ),
-        GestureDetector(
-          onTap: _gestureDetectorHandler,
-          child: Container(
-            decoration:
-            BoxDecoration(border: Border.all(color: Colors.black)),
-            width: MediaQuery
-                .of(context)
-                .size
-                .width,
-            height: MediaQuery
-                .of(context)
-                .size
-                .height * 0.2,
-            child: !_flipCard
-                ? Column(
-              children: [
-                Image.network(_weatherModel!.iconUrl!),
-                Text(
-                  "${toBeginningOfSentenceCase(
-                      _weatherModel?.weatherTypeDescription)}",
-                  style: const TextStyle(fontSize: 20),
-                ),
-              ],
-            )
-                : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 5.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
-                    children: const [
-                      // ..._statTitles.map((e) => e),
-                      Text(
-                        "Visibility",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      Text(
-                        "Air pressure",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      Text(
-                        "Humidity",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // ..._statValues.map((e) => e),
-                      Text(
-                        "${(_weatherModel!.visibility! / 1000).round()} km",
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      Text(
-                        "${(_weatherModel?.pressure)} hpa",
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      Text(
-                        "${(_weatherModel?.humidity)} %",
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+                ],
+              );
   }
 }
