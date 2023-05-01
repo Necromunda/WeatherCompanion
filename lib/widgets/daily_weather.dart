@@ -32,6 +32,7 @@ class _DailyWeatherState extends State<DailyWeather>
   final TextEditingController _textFieldController = TextEditingController();
   late final bool _locationPermission = widget.locationPermission;
   late WeatherModel? _weatherModel = null;
+  List<Map<String, dynamic>>? _weeklyWeather = null;
 
   @override
   bool get wantKeepAlive => true;
@@ -51,9 +52,10 @@ class _DailyWeatherState extends State<DailyWeather>
   }
 
   void _initPlatformState() async {
-    final data = await _getCurrentPositionWeather();
+    // final data = await _getCurrentPositionWeather();
+    _getCurrentPositionWeather();
     // if (data != null) Util.saveToPrefs("data", data);
-    setState(() => _weatherModel = data);
+    // setState(() => _weatherModel = data);
   }
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
@@ -148,22 +150,62 @@ class _DailyWeatherState extends State<DailyWeather>
 
     Map<String, double>? coords = await WeatherService.getCoordsByCity(city);
     if (coords == null) return;
+    print(coords);
 
-    print("WEEKLY WEATHER:");
-    await WeatherService.getWeeklyWeatherByCoords(coords["lat"]!, coords["lon"]!);
+    final List<dynamic>? weeklyWeatherData =
+        await WeatherService.getWeeklyWeatherByCoords(
+            coords["lat"]!, coords["lon"]!);
+    if (weeklyWeatherData == null) {
+      () => Util.showSnackBar(context, "No weekly data found for $city");
+      return;
+    }
+
+    print(weeklyWeatherData);
 
     setState(() {
       _weatherModel = dailyWeatherData;
+      _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      print(_weeklyWeather);
     });
   }
 
-  Future<WeatherModel?> _getCurrentPositionWeather() async {
+  void _getCurrentPositionWeather() async {
     if (!_locationPermission) return null;
     Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     WeatherModel? model = await WeatherService.getWeatherByCoords(pos);
-    await WeatherService.getWeeklyWeatherByCoords(pos.latitude, pos.longitude);
-    return model;
+    if (model == null) return;
+
+    final List<dynamic>? weeklyWeatherData =
+        await WeatherService.getWeeklyWeatherByCoords(
+            pos.latitude, pos.longitude);
+    if (weeklyWeatherData == null) return;
+
+    setState(() {
+      _weatherModel = model;
+      _weeklyWeather = _parseWeekData(weeklyWeatherData);
+    });
+  }
+
+  List<Map<String, dynamic>>? _parseWeekData(List<dynamic> data) {
+    try {
+      List<Map<String, dynamic>> parsedDates = [];
+      for (final obj in data) {
+        DateTime dt = DateTime.parse(obj["dt_txt"]);
+        if (dt.hour == 12) {
+          String day = DateFormat.E().format(dt);
+          parsedDates.add({
+            "dayAbbr": day,
+            "temp": obj["main"]["temp"],
+            "icon": obj["weather"][0]["icon"]
+          });
+        }
+      }
+      return parsedDates;
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
+      return null;
+    }
   }
 
   Widget get _loadingWeatherData {
@@ -188,7 +230,7 @@ class _DailyWeatherState extends State<DailyWeather>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // super.build(context);
     print("rebuilding daily weather");
     return !_locationPermission && _weatherModel == null
         ? Column(
@@ -287,9 +329,14 @@ class _DailyWeatherState extends State<DailyWeather>
                     child: Container(
                       decoration:
                           BoxDecoration(border: Border.all(color: Colors.red)),
-                      child: WeeklyWeather(
-                        hasLocationPermission: _locationPermission,
-                      ),
+                      child: _weeklyWeather == null
+                          ? Center(
+                              child: _loadingWeatherData,
+                            )
+                          : WeeklyWeather(
+                              // hasLocationPermission: _locationPermission,
+                              weeklyWeather: _weeklyWeather!,
+                            ),
                     ),
                   ),
                 ],

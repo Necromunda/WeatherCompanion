@@ -11,13 +11,18 @@ class WeatherService {
   static Future<WeatherModel?> getWeatherByCity(String city) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&q=$city&APPID=$apiKey";
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      WeatherModel? model =
-          await WeatherModel.createWeatherModel(jsonDecode(response.body));
-      return model;
-    } else {
-      print("Error getting weather data");
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        WeatherModel? model =
+            await WeatherModel.createWeatherModel(jsonDecode(response.body));
+        return model;
+      } else {
+        print("Error getting weather data");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
       return null;
     }
   }
@@ -26,29 +31,39 @@ class WeatherService {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey";
     print(url);
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      WeatherModel? model =
-          await WeatherModel.createWeatherModel(jsonDecode(response.body));
-      return model;
-    } else {
-      print("Error getting weather data");
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        WeatherModel? model =
+            await WeatherModel.createWeatherModel(jsonDecode(response.body));
+        return model;
+      } else {
+        print("Error getting weather data");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
       return null;
     }
   }
 
-  static Future<Map<String, dynamic>?> getWeeklyWeatherByCoords(
+  // static Future<List<Map<String, dynamic>>?> getWeeklyWeatherByCoords(
+  static Future<List<dynamic>?> getWeeklyWeatherByCoords(
       double lat, double lon) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=$lat&lon=$lon&appid=$apiKey";
     print(url);
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      print(data["list"]);
-      return null;
-    } else {
-      print("Error getting weather data");
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data["list"];
+      } else {
+        print("Error getting weather data");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
       return null;
     }
   }
@@ -56,16 +71,18 @@ class WeatherService {
   static Future<Map<String, double>?> getCoordsByCity(String city) async {
     final String url =
         "http://api.openweathermap.org/geo/1.0/direct?q=$city&appid=$apiKey";
-    // print(url);
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(response.body[0]);
-      // double lat = data["lat"];
-      // double lon = data["lon"];
-      print(response.body);
-      return {"lat": data["lat"], "lon": data["lon"]};
-    } else {
-      print("Error getting coords by city");
+    print(url);
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return {"lat": data[0]["lat"], "lon": data[0]["lon"]};
+      } else {
+        print("Error getting coords by city");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
       return null;
     }
   }

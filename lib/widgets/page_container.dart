@@ -82,8 +82,8 @@ class _PageContainerState extends State<PageContainer> {
           ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(onPressed: () => WeatherService.getWeeklyWeatherByCoords(65.0118734, 25.4716809)),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // floatingActionButton: FloatingActionButton(onPressed: () => WeatherService.getWeeklyWeatherByCoords(65.0118734, 25.4716809)),
     );
   }
 }
