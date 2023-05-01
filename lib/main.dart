@@ -97,7 +97,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: "Weather companion",
       theme: ThemeData(
-        primaryColor: const Color(0xFF8EC5FC),
+        // primaryColor: const Color(0xFF8EC5FC),
+        primaryColor: const Color(0xFFE0C3FC),
         fontFamily: "Quicksand",
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),

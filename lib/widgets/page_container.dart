@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
 import 'package:weather_app/screens/weather.dart';
+import 'package:weather_app/services/weather_service.dart';
 
 import '../screens/history.dart';
 import '../screens/settings.dart';
@@ -81,6 +82,8 @@ class _PageContainerState extends State<PageContainer> {
           ),
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(onPressed: () => WeatherService.getWeeklyWeatherByCoords(65.0118734, 25.4716809)),
     );
   }
 }
