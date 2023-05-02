@@ -129,18 +129,6 @@ class _DailyWeatherState extends State<DailyWeather>
 
   void _cityGestureHandler() => _displayTextInputDialog(context);
 
-  // void _getData(String city) {
-  //   WeatherService.getWeatherByCity(city).then((data) async {
-  //     if (data == null) {
-  //       Util.showSnackBar(context, "No data found for $city");
-  //       return;
-  //     }
-  //     setState(() {
-  //       _weatherModel = data;
-  //     });
-  //   });
-  // }
-
   void _getData(String city) async {
     final dailyWeatherData = await WeatherService.getWeatherByCity(city);
     if (dailyWeatherData == null) {
@@ -150,7 +138,7 @@ class _DailyWeatherState extends State<DailyWeather>
 
     Map<String, double>? coords = await WeatherService.getCoordsByCity(city);
     if (coords == null) return;
-    print(coords);
+    // print(coords);
 
     final List<dynamic>? weeklyWeatherData =
         await WeatherService.getWeeklyWeatherByCoords(
@@ -160,12 +148,12 @@ class _DailyWeatherState extends State<DailyWeather>
       return;
     }
 
-    print(weeklyWeatherData);
+    // print(weeklyWeatherData);
 
     setState(() {
       _weatherModel = dailyWeatherData;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
-      print(_weeklyWeather);
+      // print(_weeklyWeather);
     });
   }
 
@@ -190,9 +178,10 @@ class _DailyWeatherState extends State<DailyWeather>
   List<Map<String, dynamic>>? _parseWeekData(List<dynamic> data) {
     try {
       List<Map<String, dynamic>> parsedDates = [];
+
       for (final obj in data) {
         DateTime dt = DateTime.parse(obj["dt_txt"]);
-        if (dt.hour == 12) {
+        if (dt.hour == 12 && dt.day != DateTime.now().day) {
           String day = DateFormat.E().format(dt);
           parsedDates.add({
             "dayAbbr": day,
@@ -200,6 +189,15 @@ class _DailyWeatherState extends State<DailyWeather>
             "icon": obj["weather"][0]["icon"]
           });
         }
+      }
+      if (parsedDates.length < 5) {
+        DateTime dt = DateTime.parse(data.last["dt_txt"]);
+        String day = DateFormat.E().format(dt);
+        parsedDates.add({
+          "dayAbbr": day,
+          "temp": data.last["main"]["temp"],
+          "icon": data.last["weather"][0]["icon"]
+        });
       }
       return parsedDates;
     } catch (e, stacktrace) {
@@ -230,7 +228,7 @@ class _DailyWeatherState extends State<DailyWeather>
 
   @override
   Widget build(BuildContext context) {
-    // super.build(context);
+    super.build(context);
     print("rebuilding daily weather");
     return !_locationPermission && _weatherModel == null
         ? Column(

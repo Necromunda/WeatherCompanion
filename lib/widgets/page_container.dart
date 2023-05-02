@@ -71,7 +71,7 @@ class _PageContainerState extends State<PageContainer> {
                 const Settings(),
                 // Weather(locationPermission: _locationPermission),
                 DailyWeather(locationPermission: _locationPermission),
-                const WeatherHistory(),
+                WeatherHistory(locationPermission: _locationPermission),
               ],
               onPageChanged: (index) {
                 setState(() {
