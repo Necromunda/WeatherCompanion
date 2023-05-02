@@ -116,8 +116,8 @@ class _MyAppState extends State<MyApp> {
             print(snapshot.data);
             if (snapshot.hasData) {
               return Container(
-                decoration:
-                BoxDecoration(border: Border.all(color: Colors.red)),
+                // decoration:
+                // BoxDecoration(border: Border.all(color: Colors.red)),
                 child: PageContainer(locationPermission: snapshot.data!),
               );
             }

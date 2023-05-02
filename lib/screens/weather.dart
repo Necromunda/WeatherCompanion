@@ -96,10 +96,10 @@ class _FrontpageState extends State<Weather> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           // print("hellooooo");
-          DailyWeather(
-            locationPermission: _locationPermission,
+          // DailyWeather(
+          //   locationPermission: _locationPermission,
             // data: snapshot.data,
-          );
+          // );
         }
         return _loadingWeatherData;
       },

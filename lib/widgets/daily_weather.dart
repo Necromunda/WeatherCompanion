@@ -5,21 +5,21 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/weather_service.dart';
 import 'package:weather_app/util.dart';
-import 'package:weather_app/widgets/cities.dart';
+import 'package:weather_app/widgets/sun_times.dart';
 import 'package:weather_app/widgets/weather_info_card.dart';
 import 'package:weather_app/widgets/weather_temps.dart';
 import 'package:weather_app/widgets/weekly_weather.dart';
-import 'package:wheel_chooser/wheel_chooser.dart';
 
 class DailyWeather extends StatefulWidget {
   final bool locationPermission;
+  final Function addPreviousSearch;
 
   // final WeatherModel? data;
 
   const DailyWeather({
     Key? key,
     required this.locationPermission,
-    // required this.data,
+    required this.addPreviousSearch,
   }) : super(key: key);
 
   @override
@@ -52,10 +52,7 @@ class _DailyWeatherState extends State<DailyWeather>
   }
 
   void _initPlatformState() async {
-    // final data = await _getCurrentPositionWeather();
     _getCurrentPositionWeather();
-    // if (data != null) Util.saveToPrefs("data", data);
-    // setState(() => _weatherModel = data);
   }
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
@@ -138,7 +135,6 @@ class _DailyWeatherState extends State<DailyWeather>
 
     Map<String, double>? coords = await WeatherService.getCoordsByCity(city);
     if (coords == null) return;
-    // print(coords);
 
     final List<dynamic>? weeklyWeatherData =
         await WeatherService.getWeeklyWeatherByCoords(
@@ -148,13 +144,13 @@ class _DailyWeatherState extends State<DailyWeather>
       return;
     }
 
-    // print(weeklyWeatherData);
-
     setState(() {
       _weatherModel = dailyWeatherData;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
-      // print(_weeklyWeather);
     });
+    widget.addPreviousSearch(
+        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp});
+    // () => AddPreviousSearch({"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp}).dispatch(context);
   }
 
   void _getCurrentPositionWeather() async {
@@ -173,6 +169,8 @@ class _DailyWeatherState extends State<DailyWeather>
       _weatherModel = model;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
+    widget.addPreviousSearch(
+        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp});
   }
 
   List<Map<String, dynamic>>? _parseWeekData(List<dynamic> data) {
@@ -264,6 +262,7 @@ class _DailyWeatherState extends State<DailyWeather>
                   Expanded(
                     flex: 3,
                     child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Column(
@@ -318,24 +317,21 @@ class _DailyWeatherState extends State<DailyWeather>
                             WeatherInfoCard(
                               weatherModel: _weatherModel!,
                             ),
+                            SunTimes(weatherModel: _weatherModel!),
                           ],
                         ),
                       ],
                     ),
                   ),
                   Expanded(
-                    child: Container(
-                      decoration:
-                          BoxDecoration(border: Border.all(color: Colors.red)),
-                      child: _weeklyWeather == null
-                          ? Center(
-                              child: _loadingWeatherData,
-                            )
-                          : WeeklyWeather(
-                              // hasLocationPermission: _locationPermission,
-                              weeklyWeather: _weeklyWeather!,
-                            ),
-                    ),
+                    child: _weeklyWeather == null
+                        ? Center(
+                            child: _loadingWeatherData,
+                          )
+                        : WeeklyWeather(
+                            // hasLocationPermission: _locationPermission,
+                            weeklyWeather: _weeklyWeather!,
+                          ),
                   ),
                 ],
               );

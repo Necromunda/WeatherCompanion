@@ -19,9 +19,11 @@ class WeatherModel {
       icon,
       city,
       countryCode,
-      sunrise,
-      sunset,
+      // sunrise,
+      // sunset,
       iconUrl;
+
+  DateTime? sunrise, sunset;
 
   bool isFavorite;
 
@@ -54,12 +56,10 @@ class WeatherModel {
       final Map<String, dynamic> data) async {
     try {
       DateTime sunr =
-      DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
+          DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
       DateTime suns =
-      DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
-      // print(data["wind"]["deg"]);
+          DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
       DateTime dt = DateTime.fromMillisecondsSinceEpoch(data["dt"] * 1000);
-      print(dt);
 
       return WeatherModel(
         lat: data["coord"]["lat"].toDouble(),
@@ -77,8 +77,10 @@ class WeatherModel {
         windSpeed: data["wind"]["speed"].toDouble(),
         windDeg: data["wind"]["deg"].toDouble(),
         countryCode: data["sys"]["country"],
-        sunrise: DateFormat("HH:mm").format(sunr),
-        sunset: DateFormat("HH:mm").format(suns),
+        sunrise: sunr,
+        // sunrise: DateFormat("HH:mm").format(sunr),
+        // sunset: DateFormat("HH:mm").format(suns),
+        sunset: suns,
         city: data["name"],
         iconUrl:
             "https://openweathermap.org/img/wn/${data["weather"][0]["icon"]}@2x.png",

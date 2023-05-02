@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/screens/weather.dart';
-import 'package:weather_app/services/weather_service.dart';
 
 import '../screens/history.dart';
 import '../screens/settings.dart';
@@ -10,7 +8,8 @@ import 'daily_weather.dart';
 class PageContainer extends StatefulWidget {
   final bool locationPermission;
 
-  const PageContainer({Key? key, required this.locationPermission}) : super(key: key);
+  const PageContainer({Key? key, required this.locationPermission})
+      : super(key: key);
 
   @override
   State<PageContainer> createState() => _PageContainerState();
@@ -20,6 +19,13 @@ class _PageContainerState extends State<PageContainer> {
   late final bool _locationPermission = widget.locationPermission;
   int _selectedIndex = 1;
   final PageController _pageController = PageController(initialPage: 1);
+  List<Map<String, dynamic>> _previousSearches = [];
+
+  void _addPreviousSearch(Map<String, dynamic> previousSearch) {
+    setState(() {
+      _previousSearches.add(previousSearch);
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -69,9 +75,12 @@ class _PageContainerState extends State<PageContainer> {
               controller: _pageController,
               children: <Widget>[
                 const Settings(),
-                // Weather(locationPermission: _locationPermission),
-                DailyWeather(locationPermission: _locationPermission),
-                WeatherHistory(locationPermission: _locationPermission),
+                DailyWeather(
+                    locationPermission: _locationPermission, addPreviousSearch: _addPreviousSearch),
+                WeatherHistory(
+                  locationPermission: _locationPermission,
+                  previousSearches: _previousSearches,
+                ),
               ],
               onPageChanged: (index) {
                 setState(() {

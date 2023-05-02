@@ -5,8 +5,6 @@ import 'package:weather_app/models/weather_model.dart';
 class WeatherInfoCard extends StatefulWidget {
   final WeatherModel weatherModel;
 
-  // final bool flipCard;
-
   const WeatherInfoCard({Key? key, required this.weatherModel})
       : super(key: key);
 
@@ -41,7 +39,8 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
     return GestureDetector(
       onTap: _gestureDetectorHandler,
       child: Container(
-        decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+        decoration:
+            BoxDecoration(border: Border.all(color: Colors.transparent)),
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height * 0.2,
         child: !_flipCard

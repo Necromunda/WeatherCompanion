@@ -9,7 +9,7 @@ class WeeklyWeather extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(border: Border.all(color: Colors.yellow)),
+      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Colors.black, width: 1.5)),),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
