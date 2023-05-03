@@ -3,14 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/screens/weather.dart';
-import 'package:weather_app/services/weather_service.dart';
-import 'package:weather_app/widgets/daily_weather.dart';
 import 'package:weather_app/widgets/page_container.dart';
-import 'package:weather_app/widgets/weekly_weather.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-import 'models/weather_model.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,11 +92,9 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      // home: const Frontpage(),
       home: FutureBuilder(
           future: _handleLocationPermission(),
           builder: (context, snapshot) {
-            print(snapshot.data);
             if (snapshot.hasData) {
               return Container(
                 // decoration:

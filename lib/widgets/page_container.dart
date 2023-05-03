@@ -64,7 +64,7 @@ class _PageContainerState extends State<PageContainer> {
               label: "History", icon: Icon(Icons.history_outlined)),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFFE0C3FC),
+        selectedItemColor: const Color(0xFFE0C3FC),
         onTap: _onItemTapped,
       ),
       body: Column(

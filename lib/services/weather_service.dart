@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:weather_app/models/weather_model.dart';
@@ -11,6 +10,7 @@ class WeatherService {
   static Future<WeatherModel?> getWeatherByCity(String city) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&q=$city&APPID=$apiKey";
+    print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {

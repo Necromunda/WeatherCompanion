@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -53,6 +55,18 @@ class _DailyWeatherState extends State<DailyWeather>
 
   void _initPlatformState() async {
     _getCurrentPositionWeather();
+    try {
+      Util.loadFromPrefs("favoriteCities").then((value) {
+        if (value != null) {
+          List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
+          jsonList.map((e) => print(e.runtimeType));
+          print(value);
+          setState(() => _favoriteCities = jsonList.map((e) => e as String).toList());
+        }
+      });
+    } catch (e, stackTrace) {
+      debugPrint("$e, $stackTrace");
+    }
   }
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
@@ -109,17 +123,16 @@ class _DailyWeatherState extends State<DailyWeather>
   }
 
   void _addToFavorites(String? model) {
-    if (model != null) {
-      if (!_favoriteCities.contains(model)) {
-        setState(() {
+    setState(() {
+      if (model != null) {
+        if (!_favoriteCities.contains(model)) {
           _favoriteCities.add(_weatherModel!.currentCity);
-        });
-      } else {
-        setState(() {
+        } else {
           _favoriteCities.remove(model);
-        });
+        }
+        Util.saveToPrefs("favoriteCities", _favoriteCities);
       }
-    }
+    });
   }
 
   void _cityGestureHandler() => _displayTextInputDialog(context);
@@ -146,8 +159,11 @@ class _DailyWeatherState extends State<DailyWeather>
       _weatherModel = dailyWeatherData;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    widget.addPreviousSearch(
-        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp, "date": DateTime.now(),});
+    widget.addPreviousSearch({
+      "name": _weatherModel!.currentCity,
+      "temp": _weatherModel!.temp,
+      "date": DateTime.now(),
+    });
   }
 
   void _getCurrentPositionWeather() async {
@@ -166,8 +182,11 @@ class _DailyWeatherState extends State<DailyWeather>
       _weatherModel = model;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    widget.addPreviousSearch(
-        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp, "date": DateTime.now(),});
+    widget.addPreviousSearch({
+      "name": _weatherModel!.currentCity,
+      "temp": _weatherModel!.temp,
+      "date": DateTime.now(),
+    });
   }
 
   List<Map<String, dynamic>>? _parseWeekData(List<dynamic> data) {
