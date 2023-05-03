@@ -48,6 +48,7 @@ dependencies:
   latlong2: ^0.8.1
   flutter_map_geojson: ^1.0.1
   weather_icons: ^3.0.0
+  grouped_list: ^5.1.2
 
 dev_dependencies:
   flutter_test:
