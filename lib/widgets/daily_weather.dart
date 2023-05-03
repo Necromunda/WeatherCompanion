@@ -28,7 +28,7 @@ class DailyWeather extends StatefulWidget {
 
 class _DailyWeatherState extends State<DailyWeather>
     with AutomaticKeepAliveClientMixin<DailyWeather> {
-  List<WeatherModel> _favoriteCities = [];
+  List<String> _favoriteCities = [];
   final TextEditingController _textFieldController = TextEditingController();
   late final bool _locationPermission = widget.locationPermission;
   late WeatherModel? _weatherModel = null;
@@ -94,9 +94,9 @@ class _DailyWeatherState extends State<DailyWeather>
             ..._favoriteCities.map((city) {
               return Center(
                 child: TextButton(
-                  child: Text(city.currentCity),
+                  child: Text(city),
                   onPressed: () {
-                    _getData(city.currentCity);
+                    _getData(city);
                     Navigator.pop(context);
                   },
                 ),
@@ -108,16 +108,14 @@ class _DailyWeatherState extends State<DailyWeather>
     );
   }
 
-  void _addToFavorites(WeatherModel? model) {
+  void _addToFavorites(String? model) {
     if (model != null) {
       if (!_favoriteCities.contains(model)) {
         setState(() {
-          _weatherModel!.isFavorite = !_weatherModel!.isFavorite;
-          _favoriteCities.add(_weatherModel!);
+          _favoriteCities.add(_weatherModel!.currentCity);
         });
       } else {
         setState(() {
-          _weatherModel!.isFavorite = !_weatherModel!.isFavorite;
           _favoriteCities.remove(model);
         });
       }
@@ -129,7 +127,7 @@ class _DailyWeatherState extends State<DailyWeather>
   void _getData(String city) async {
     final dailyWeatherData = await WeatherService.getWeatherByCity(city);
     if (dailyWeatherData == null) {
-      () => Util.showSnackBar(context, "No data found for $city");
+      Util.showSnackBar(context, "No data found for $city");
       return;
     }
 
@@ -140,7 +138,7 @@ class _DailyWeatherState extends State<DailyWeather>
         await WeatherService.getWeeklyWeatherByCoords(
             coords["lat"]!, coords["lon"]!);
     if (weeklyWeatherData == null) {
-      () => Util.showSnackBar(context, "No weekly data found for $city");
+      Util.showSnackBar(context, "No weekly data found for $city");
       return;
     }
 
@@ -149,8 +147,7 @@ class _DailyWeatherState extends State<DailyWeather>
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
     widget.addPreviousSearch(
-        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp});
-    // () => AddPreviousSearch({"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp}).dispatch(context);
+        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp, "date": DateTime.now(),});
   }
 
   void _getCurrentPositionWeather() async {
@@ -170,7 +167,7 @@ class _DailyWeatherState extends State<DailyWeather>
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
     widget.addPreviousSearch(
-        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp});
+        {"name": _weatherModel!.currentCity, "temp": _weatherModel!.temp, "date": DateTime.now(),});
   }
 
   List<Map<String, dynamic>>? _parseWeekData(List<dynamic> data) {
@@ -184,7 +181,7 @@ class _DailyWeatherState extends State<DailyWeather>
           parsedDates.add({
             "dayAbbr": day,
             "temp": obj["main"]["temp"],
-            "icon": obj["weather"][0]["icon"]
+            "icon": obj["weather"][0]["icon"],
           });
         }
       }
@@ -194,7 +191,7 @@ class _DailyWeatherState extends State<DailyWeather>
         parsedDates.add({
           "dayAbbr": day,
           "temp": data.last["main"]["temp"],
-          "icon": data.last["weather"][0]["icon"]
+          "icon": data.last["weather"][0]["icon"],
         });
       }
       return parsedDates;
@@ -270,6 +267,14 @@ class _DailyWeatherState extends State<DailyWeather>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                const IconButton(
+                                  onPressed: null,
+                                  icon: Icon(
+                                    Icons.home,
+                                    color: Colors.green,
+                                    size: 30,
+                                  ),
+                                ),
                                 Container(
                                   decoration: const BoxDecoration(
                                     border: Border(
@@ -283,23 +288,31 @@ class _DailyWeatherState extends State<DailyWeather>
                                     onTap: _cityGestureHandler,
                                     child: Text(
                                       _weatherModel!.currentCity,
-                                      style: const TextStyle(
-                                          fontSize: 35,
+                                      style: TextStyle(
+                                          fontSize: _weatherModel!.currentCity
+                                                      .characters.length <=
+                                                  15
+                                              ? 35
+                                              : 30,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ),
-                                // IconButton(
-                                //   onPressed: () => _addToFavorites(_weatherModel),
-                                //   icon: Icon(
-                                //     _weatherModel!.isFavorite
-                                //         ? Icons.star
-                                //         : Icons.star_outline,
-                                //     size: 35,
-                                //   ),
-                                //   color:
-                                //       _weatherModel!.isFavorite ? Colors.yellow : Colors.grey,
-                                // ),
+                                IconButton(
+                                  onPressed: () => _addToFavorites(
+                                      _weatherModel!.currentCity),
+                                  icon: Icon(
+                                    _favoriteCities.contains(
+                                            _weatherModel!.currentCity)
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 30,
+                                  ),
+                                  color: _favoriteCities
+                                          .contains(_weatherModel!.currentCity)
+                                      ? Colors.yellow
+                                      : Colors.grey,
+                                ),
                               ],
                             ),
                             Padding(

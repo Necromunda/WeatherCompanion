@@ -31,26 +31,16 @@ class _MyAppState extends State<MyApp> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      //     content: Text(
-      //         'Location services are disabled. Please enable the services')));
       return false;
     }
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // setState(() => _isLocationEnabled = false);
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //     const SnackBar(content: Text('Location permissions are denied')));
         return false;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      // setState(() => _isLocationEnabled = false);
-      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      //     content: Text(
-      //         'Location permissions are permanently denied, we cannot request permissions.')));
       return false;
     }
     return true;

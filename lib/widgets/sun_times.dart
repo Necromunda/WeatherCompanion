@@ -14,8 +14,7 @@ class SunTimes extends StatelessWidget {
     String sunrise = DateFormat("HH:mm").format(weatherModel.sunrise!);
     String sunset = DateFormat("HH:mm").format(weatherModel.sunset!);
     DateTime dt = DateTime.now();
-    // DateTime curr = DateTime(dt.year, dt.month, 3,
-    //     2, 00);
+
     DateTime tillSunrise = DateTime(dt.year, dt.month, dt.day,
         weatherModel.sunrise!.hour, weatherModel.sunrise!.minute);
     DateTime tillSunset = DateTime(dt.year, dt.month, dt.day,
@@ -35,9 +34,10 @@ class SunTimes extends StatelessWidget {
         '${sunriseDifference.inHours.abs()}h ${sunriseDifference.inMinutes.remainder(60).abs()}m';
     String sunsetDifferenceString =
         '${sunsetDifference.inHours.abs()}h ${sunsetDifference.inMinutes.remainder(60).abs()}m';
-    String message = sunriseDifference.isNegative
-        ? 'Sunset in $sunsetDifferenceString'
-        : 'Sunrise in $sunriseDifferenceString';
+
+    String message = sunriseDifference.compareTo(sunsetDifference).isNegative
+        ? 'Sunrise in $sunriseDifferenceString'
+        : 'Sunset in $sunsetDifferenceString';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
