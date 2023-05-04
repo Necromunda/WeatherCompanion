@@ -12,7 +12,7 @@ import 'package:weather_app/widgets/search_location.dart';
 import 'package:weather_app/widgets/sun_times.dart';
 import 'package:weather_app/widgets/weather_info_card.dart';
 import 'package:weather_app/widgets/weather_temps.dart';
-import 'package:weather_app/widgets/weekly_weather.dart';
+import 'package:weather_app/widgets/weekly_weather_showcase.dart';
 
 class DailyWeather extends StatefulWidget {
   final bool locationPermission;
@@ -68,10 +68,10 @@ class _DailyWeatherState extends State<DailyWeather>
       Util.loadFromPrefs("favoriteCities").then((value) {
         if (value != null) {
           List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
-          jsonList.map((e) => print(e.runtimeType));
-          print(value);
-          setState(() =>
-          _favoriteCities = jsonList.map((e) => FavoriteCity.createFavoriteCity(e)).toList());
+          // jsonList.map((e) => print(e.runtimeType));
+          // print(value);
+          setState(() => _favoriteCities =
+              jsonList.map((e) => FavoriteCity.createFavoriteCity(e)).toList());
         }
       });
     } catch (e, stackTrace) {
@@ -395,8 +395,7 @@ class _DailyWeatherState extends State<DailyWeather>
                         ? Center(
                             child: _loadingWeatherData,
                           )
-                        : WeeklyWeather(
-                            // hasLocationPermission: _locationPermission,
+                        : WeeklyWeatherShowcase(
                             weeklyWeather: _weeklyWeather!,
                           ),
                   ),

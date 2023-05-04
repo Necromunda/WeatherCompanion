@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:loading_indicator/loading_indicator.dart';
 
 import '../widgets/daily_weather.dart';
-import '../widgets/weekly_weather.dart';
+import '../widgets/weekly_weather_showcase.dart';
 
 enum PermissionState {
   allowed,
