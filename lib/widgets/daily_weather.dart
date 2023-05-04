@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:weather_app/models/favorite_city_model.dart';
 import 'package:weather_app/models/weather_model.dart';
+import 'package:weather_app/models/weekly_weather_model.dart';
 import 'package:weather_app/services/weather_service.dart';
 import 'package:weather_app/util.dart';
 import 'package:weather_app/widgets/search_location.dart';
@@ -39,7 +40,7 @@ class _DailyWeatherState extends State<DailyWeather>
   final TextEditingController _textFieldController = TextEditingController();
   late final bool _locationPermission = widget.locationPermission;
   late WeatherModel? _weatherModel = null;
-  List<Map<String, dynamic>>? _weeklyWeather = null;
+  List<WeeklyWeatherModel>? _weeklyWeather = null;
 
   @override
   bool get wantKeepAlive => true;
@@ -206,29 +207,20 @@ class _DailyWeatherState extends State<DailyWeather>
     });
   }
 
-  List<Map<String, dynamic>>? _parseWeekData(List<dynamic> data) {
+  List<WeeklyWeatherModel>? _parseWeekData(List<dynamic> data) {
     try {
-      List<Map<String, dynamic>> parsedDates = [];
+      List<WeeklyWeatherModel> parsedDates = [];
 
       for (final obj in data) {
         DateTime dt = DateTime.parse(obj["dt_txt"]);
         if (dt.hour == 12 && dt.day != DateTime.now().day) {
-          String day = DateFormat.E().format(dt);
-          parsedDates.add({
-            "dayAbbr": day,
-            "temp": obj["main"]["temp"],
-            "icon": obj["weather"][0]["icon"],
-          });
+          WeeklyWeatherModel.createWeeklyWeatherModel(obj)
+              .then((value) => parsedDates.add(value!));
         }
       }
-      if (parsedDates.length < 5) {
-        DateTime dt = DateTime.parse(data.last["dt_txt"]);
-        String day = DateFormat.E().format(dt);
-        parsedDates.add({
-          "dayAbbr": day,
-          "temp": data.last["main"]["temp"],
-          "icon": data.last["weather"][0]["icon"],
-        });
+      if (parsedDates.length < 4 && parsedDates.isNotEmpty) {
+        WeeklyWeatherModel.createWeeklyWeatherModel(data.last)
+            .then((value) => parsedDates.add(value!));
       }
       return parsedDates;
     } catch (e, stacktrace) {
@@ -380,9 +372,20 @@ class _DailyWeatherState extends State<DailyWeather>
                         ),
                         Column(
                           children: [
-                            WeatherTemperature(weatherModel: _weatherModel!),
+                            WeatherTemperature(
+                              temp: _weatherModel!.temp!,
+                              tempFeelsLike: _weatherModel!.tempFeelsLike!,
+                              tempMin: _weatherModel!.tempMin!,
+                              tempMax: _weatherModel!.tempMax!,
+                            ),
                             WeatherInfoCard(
-                              weatherModel: _weatherModel!,
+                              iconUrl: _weatherModel!.iconUrl!,
+                              weatherTypeDescription:
+                                  _weatherModel!.weatherTypeDescription!,
+                              visibility: _weatherModel!.visibility!,
+                              humidity: _weatherModel!.humidity!,
+                              pressure: _weatherModel!.pressure!,
+                              windDeg: _weatherModel!.windDeg!,
                             ),
                             SunTimes(weatherModel: _weatherModel!),
                           ],

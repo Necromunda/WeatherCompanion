@@ -1,9 +1,7 @@
 import 'package:intl/intl.dart';
 
-class WeatherModel {
-  double? lat,
-      lon,
-      temp,
+class WeeklyWeatherModel {
+  double? temp,
       tempFeelsLike,
       tempMin,
       tempMax,
@@ -13,58 +11,34 @@ class WeatherModel {
       visibility,
       windDeg;
 
-  // int? pressure, humidity, visibility, windDeg;
-  String? weatherType,
-      weatherTypeDescription,
-      icon,
-      city,
-      countryCode,
-      // sunrise,
-      // sunset,
-      iconUrl;
+  String? weatherType, weatherTypeDescription, icon, iconUrl, dayAbbr;
 
-  DateTime? sunrise, sunset, dt;
+  DateTime? dt;
 
-  bool isFavorite;
-
-  WeatherModel({
-    this.lat,
-    this.lon,
+  WeeklyWeatherModel({
     this.temp,
     this.tempFeelsLike,
     this.tempMin,
     this.tempMax,
     this.windSpeed,
     this.windDeg,
-    this.sunrise,
-    this.sunset,
     this.pressure,
     this.humidity,
     this.visibility,
     this.weatherType,
     this.weatherTypeDescription,
     this.icon,
-    this.city,
-    this.countryCode,
     this.iconUrl,
+    this.dayAbbr,
     this.dt,
-    required this.isFavorite,
   });
 
-  String get currentCity => "$city, $countryCode";
-
-  static Future<WeatherModel?> createWeatherModel(
+  static Future<WeeklyWeatherModel?> createWeeklyWeatherModel(
       final Map<String, dynamic> data) async {
     try {
-      DateTime sunr =
-          DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunrise"] * 1000);
-      DateTime suns =
-          DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
-      DateTime dt = DateTime.fromMillisecondsSinceEpoch(data["dt"] * 1000);
+      DateTime dt = DateTime.parse(data["dt_txt"]);
 
-      return WeatherModel(
-        lat: data["coord"]["lat"].toDouble(),
-        lon: data["coord"]["lon"].toDouble(),
+      return WeeklyWeatherModel(
         weatherType: data["weather"][0]["main"],
         weatherTypeDescription: data["weather"][0]["description"],
         icon: data["weather"][0]["icon"],
@@ -77,16 +51,10 @@ class WeatherModel {
         visibility: data["visibility"].toDouble(),
         windSpeed: data["wind"]["speed"].toDouble(),
         windDeg: data["wind"]["deg"].toDouble(),
-        countryCode: data["sys"]["country"],
-        sunrise: sunr,
-        // sunrise: DateFormat("HH:mm").format(sunr),
-        // sunset: DateFormat("HH:mm").format(suns),
-        sunset: suns,
-        city: data["name"],
         iconUrl:
             "https://openweathermap.org/img/wn/${data["weather"][0]["icon"]}@2x.png",
+        dayAbbr: DateFormat.E().format(dt),
         dt: dt,
-        isFavorite: false,
       );
     } catch (e) {
       print(e);
@@ -96,8 +64,6 @@ class WeatherModel {
 
   Map<String, dynamic> toJson() {
     return {
-      "lat": lat,
-      "lon": lon,
       "weatherType": weatherType,
       "weatherTypeDescription": weatherTypeDescription,
       "icon": icon,
@@ -110,13 +76,9 @@ class WeatherModel {
       "visibility": visibility,
       "windSpeed": windSpeed,
       "windDeg": windDeg,
-      "countryCode": countryCode,
-      "sunrise": sunrise,
-      "sunset": sunset,
-      "city": city,
       "iconUrl": iconUrl,
+      "dayAbbr": dayAbbr,
       "dt": dt,
-      "isFavorite": isFavorite,
     };
   }
 }

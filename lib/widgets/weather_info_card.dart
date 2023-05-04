@@ -3,17 +3,30 @@ import 'package:intl/intl.dart';
 import 'package:weather_app/models/weather_model.dart';
 
 class WeatherInfoCard extends StatefulWidget {
-  final WeatherModel weatherModel;
+  final String iconUrl, weatherTypeDescription;
+  final double visibility, humidity, pressure, windDeg;
 
-  const WeatherInfoCard({Key? key, required this.weatherModel})
-      : super(key: key);
+  const WeatherInfoCard({
+    Key? key,
+    required this.iconUrl,
+    required this.weatherTypeDescription,
+    required this.visibility,
+    required this.humidity,
+    required this.pressure,
+    required this.windDeg,
+  }) : super(key: key);
 
   @override
   State<WeatherInfoCard> createState() => _WeatherInfoCardState();
 }
 
 class _WeatherInfoCardState extends State<WeatherInfoCard> {
-  late final WeatherModel _weatherModel = widget.weatherModel;
+  late final String _iconUrl = widget.iconUrl,
+      _weatherTypeDescription = widget.weatherTypeDescription;
+  late final double _visibility = widget.visibility,
+      _humidity = widget.humidity,
+      _pressure = widget.pressure,
+      _windDeg = widget.windDeg;
   late bool _flipCard = false;
   static const List<String> _directions = [
     'north',
@@ -46,9 +59,9 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
         child: !_flipCard
             ? Column(
                 children: [
-                  Image.network(_weatherModel.iconUrl!),
+                  Image.network(_iconUrl),
                   Text(
-                    "${toBeginningOfSentenceCase(_weatherModel.weatherTypeDescription)}",
+                    "${toBeginningOfSentenceCase(_weatherTypeDescription)}",
                     style: const TextStyle(fontSize: 20),
                   ),
                 ],
@@ -88,19 +101,19 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Text(
-                          "${(_weatherModel.visibility! / 1000).round()} km",
+                          "${(_visibility / 1000).round()} km",
                           style: const TextStyle(fontSize: 18),
                         ),
                         Text(
-                          "${(_weatherModel.pressure)} hpa",
+                          "$_pressure hpa",
                           style: const TextStyle(fontSize: 18),
                         ),
                         Text(
-                          "${(_weatherModel.humidity)} %",
+                          "${_humidity.round()} %",
                           style: const TextStyle(fontSize: 18),
                         ),
                         Text(
-                          _convertDegreesToText(_weatherModel.windDeg!),
+                          _convertDegreesToText(_windDeg),
                           style: const TextStyle(fontSize: 18),
                         ),
                       ],
