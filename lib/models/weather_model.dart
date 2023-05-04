@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 class WeatherModel {
   double? lat,
       lon,
@@ -13,15 +11,7 @@ class WeatherModel {
       visibility,
       windDeg;
 
-  // int? pressure, humidity, visibility, windDeg;
-  String? weatherType,
-      weatherTypeDescription,
-      icon,
-      city,
-      countryCode,
-      // sunrise,
-      // sunset,
-      iconUrl;
+  String? weatherType, weatherTypeDescription, icon, city, countryCode, iconUrl;
 
   DateTime? sunrise, sunset, dt;
 
@@ -79,8 +69,6 @@ class WeatherModel {
         windDeg: data["wind"]["deg"].toDouble(),
         countryCode: data["sys"]["country"],
         sunrise: sunr,
-        // sunrise: DateFormat("HH:mm").format(sunr),
-        // sunset: DateFormat("HH:mm").format(suns),
         sunset: suns,
         city: data["name"],
         iconUrl:
@@ -88,8 +76,7 @@ class WeatherModel {
         dt: dt,
         isFavorite: false,
       );
-    } catch (e) {
-      print(e);
+    } catch (_) {
       return null;
     }
   }

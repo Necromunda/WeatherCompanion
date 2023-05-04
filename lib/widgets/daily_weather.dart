@@ -69,8 +69,6 @@ class _DailyWeatherState extends State<DailyWeather>
       Util.loadFromPrefs("favoriteCities").then((value) {
         if (value != null) {
           List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
-          // jsonList.map((e) => print(e.runtimeType));
-          // print(value);
           setState(() => _favoriteCities =
               jsonList.map((e) => FavoriteCity.createFavoriteCity(e)).toList());
         }

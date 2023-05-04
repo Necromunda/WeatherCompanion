@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:weather_app/models/favorite_city_model.dart';
 import 'package:weather_app/util.dart';
 
 class Settings extends StatefulWidget {
@@ -12,7 +13,7 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  List<String> _favoriteCities = [];
+  List<FavoriteCity> _favoriteCities = [];
   String _hometown = "";
   late final List<Map<String, dynamic>> _elements = [
     {
@@ -41,19 +42,21 @@ class _SettingsState extends State<Settings> {
     print("settingsInitState");
   }
 
-  void _initPlatformState() async {
+  void _initPlatformState() {
+    _getFavoriteCities();
+  }
+
+  void _getFavoriteCities() {
     try {
       Util.loadFromPrefs("favoriteCities").then((value) {
         if (value != null) {
-          print(value);
           List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
           setState(() {
-            _favoriteCities = jsonList.map((e) => e as String).toList();
+            _favoriteCities = jsonList.map((e) => FavoriteCity.createFavoriteCity(e)).toList();
             _elements[0]["element"] = _getExpansionTile;
           });
         }
       });
-      print(_favoriteCities);
     } catch (e, stackTrace) {
       debugPrint("$e, $stackTrace");
     }
@@ -66,14 +69,14 @@ class _SettingsState extends State<Settings> {
       children: <Widget>[
         ..._favoriteCities.map((city) {
           return ListTile(
-              title: Text(city),
-              trailing: _hometown != city
+              title: Text(city.name),
+              trailing: _hometown != city.name
                   ? null
                   : const Icon(
                       Icons.home,
                       color: Colors.green,
                     ),
-              onTap: () => _dropDownHandler(city));
+              onTap: () => _dropDownHandler(city.name));
         })
       ],
     );

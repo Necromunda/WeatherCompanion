@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:weather_app/screens/weekly_weather_screen.dart';
 
-import '../models/weather_model.dart';
 import '../models/weekly_weather_model.dart';
 
 class WeeklyWeatherShowcase extends StatelessWidget {
@@ -26,7 +24,8 @@ class WeeklyWeatherShowcase extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => WeeklyWeatherScreen(weeklyWeatherModel: model),
+                    builder: (context) =>
+                        WeeklyWeatherScreen(weeklyWeatherModel: model),
                   ),
                 ),
                 child: Column(
