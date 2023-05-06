@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
+import 'package:weather_app/screens/weather_screen.dart';
 
-import '../screens/history.dart';
-import '../screens/settings.dart';
+import '../screens/history_screen.dart';
+import '../screens/settings_screen.dart';
 import 'daily_weather.dart';
 
 class PageContainer extends StatefulWidget {
@@ -74,10 +75,12 @@ class _PageContainerState extends State<PageContainer> {
             child: PageView(
               controller: _pageController,
               children: <Widget>[
-                const Settings(),
-                DailyWeather(
-                    locationPermission: _locationPermission, addPreviousSearch: _addPreviousSearch),
-                WeatherHistory(
+                SettingsScreen(locationPermission: _locationPermission),
+                Weather(
+                  locationPermission: _locationPermission,
+                  addPreviousSearch: _addPreviousSearch,
+                ),
+                WeatherHistoryScreen(
                   locationPermission: _locationPermission,
                   previousSearches: _previousSearches,
                 ),
@@ -91,8 +94,6 @@ class _PageContainerState extends State<PageContainer> {
           ),
         ],
       ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // floatingActionButton: FloatingActionButton(onPressed: () => WeatherService.getWeeklyWeatherByCoords(65.0118734, 25.4716809)),
     );
   }
 }

@@ -7,15 +7,15 @@ import 'package:weather_app/models/weather_model.dart';
 class WeatherService {
   static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
 
-  static Future<WeatherModel?> getWeatherByCity(String city) async {
+  static Future<DailyWeatherModel?> getWeatherByCity(String city) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&q=$city&APPID=$apiKey";
     print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        WeatherModel? model =
-            await WeatherModel.createWeatherModel(jsonDecode(response.body));
+        DailyWeatherModel? model =
+            await DailyWeatherModel.createWeatherModel(jsonDecode(response.body));
         return model;
       } else {
         print("Error getting weather data");
@@ -27,18 +27,38 @@ class WeatherService {
     }
   }
 
-  static Future<WeatherModel?> getWeatherByCoords(Position position) async {
+  static Future<DailyWeatherModel?> getWeatherByCoords(Position position) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey";
     print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        WeatherModel? model =
-            await WeatherModel.createWeatherModel(jsonDecode(response.body));
+        DailyWeatherModel? model =
+            await DailyWeatherModel.createWeatherModel(jsonDecode(response.body));
         return model;
       } else {
         print("Error getting weather data");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
+      return null;
+    }
+  }
+
+  static Future<String?> getCityByCoords(Position position) async {
+    final String url =
+        "http://api.openweathermap.org/geo/1.0/reverse?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey";
+    print(url);
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        print(response.body);
+        final data = jsonDecode(response.body)[0];
+        return "${data["name"]}, ${data["country"]}";
+      } else {
+        print("Error getting city name by coords");
         return null;
       }
     } catch (e, stacktrace) {

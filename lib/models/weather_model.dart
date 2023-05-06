@@ -1,4 +1,4 @@
-class WeatherModel {
+class DailyWeatherModel {
   double? lat,
       lon,
       temp,
@@ -17,7 +17,7 @@ class WeatherModel {
 
   bool isFavorite;
 
-  WeatherModel({
+  DailyWeatherModel({
     this.lat,
     this.lon,
     this.temp,
@@ -43,7 +43,7 @@ class WeatherModel {
 
   String get currentCity => "$city, $countryCode";
 
-  static Future<WeatherModel?> createWeatherModel(
+  static Future<DailyWeatherModel?> createWeatherModel(
       final Map<String, dynamic> data) async {
     try {
       DateTime sunr =
@@ -52,7 +52,7 @@ class WeatherModel {
           DateTime.fromMillisecondsSinceEpoch(data["sys"]["sunset"] * 1000);
       DateTime dt = DateTime.fromMillisecondsSinceEpoch(data["dt"] * 1000);
 
-      return WeatherModel(
+      return DailyWeatherModel(
         lat: data["coord"]["lat"].toDouble(),
         lon: data["coord"]["lon"].toDouble(),
         weatherType: data["weather"][0]["main"],

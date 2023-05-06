@@ -2,22 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
-class WeatherHistory extends StatefulWidget {
+class WeatherHistoryScreen extends StatefulWidget {
   final bool locationPermission;
   final List<Map<String, dynamic>> previousSearches;
 
-  const WeatherHistory(
+  const WeatherHistoryScreen(
       {Key? key,
       required this.locationPermission,
       required this.previousSearches})
       : super(key: key);
 
   @override
-  State<WeatherHistory> createState() => _WeatherHistoryState();
+  State<WeatherHistoryScreen> createState() => _WeatherHistoryScreenState();
 }
 
-class _WeatherHistoryState extends State<WeatherHistory>
-    with AutomaticKeepAliveClientMixin<WeatherHistory> {
+class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
+    with AutomaticKeepAliveClientMixin<WeatherHistoryScreen> {
   late final bool _locationPermission = widget.locationPermission;
   late final List<Map<String, dynamic>> _previousSearches =
       widget.previousSearches;

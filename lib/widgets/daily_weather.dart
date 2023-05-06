@@ -15,32 +15,32 @@ import 'package:weather_app/widgets/weather_info_card.dart';
 import 'package:weather_app/widgets/weather_temps.dart';
 import 'package:weather_app/widgets/weekly_weather_showcase.dart';
 
-class DailyWeather extends StatefulWidget {
+class Weather extends StatefulWidget {
   final bool locationPermission;
   final Function addPreviousSearch;
 
-  // final WeatherModel? data;
+  // final WeatherModel? weatherModel;
+  // final List<WeeklyWeatherModel>? weeklyWeather;
 
-  const DailyWeather({
+  const Weather({
     Key? key,
     required this.locationPermission,
     required this.addPreviousSearch,
+    // required this.weatherModel,
+    // required this.weeklyWeatherModel,
   }) : super(key: key);
 
   @override
-  State<DailyWeather> createState() => _DailyWeatherState();
+  State<Weather> createState() => _WeatherState();
 }
 
-class _DailyWeatherState extends State<DailyWeather>
-    with AutomaticKeepAliveClientMixin<DailyWeather> {
-  // List<String> _favoriteCities = [];
-  List<FavoriteCity> _favoriteCities = [
-    // FavoriteCity(name: "Oulu, FI", home: true),
-  ];
+class _WeatherState extends State<Weather>
+    with AutomaticKeepAliveClientMixin<Weather> {
+  List<FavoriteCityModel> _favoriteCities = [];
   final TextEditingController _textFieldController = TextEditingController();
   late final bool _locationPermission = widget.locationPermission;
-  late WeatherModel? _weatherModel = null;
-  List<WeeklyWeatherModel>? _weeklyWeather = null;
+  DailyWeatherModel? _weatherModel;
+  List<WeeklyWeatherModel>? _weeklyWeather;
 
   @override
   bool get wantKeepAlive => true;
@@ -69,8 +69,9 @@ class _DailyWeatherState extends State<DailyWeather>
       Util.loadFromPrefs("favoriteCities").then((value) {
         if (value != null) {
           List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
-          setState(() => _favoriteCities =
-              jsonList.map((e) => FavoriteCity.createFavoriteCity(e)).toList());
+          setState(() => _favoriteCities = jsonList
+              .map((e) => FavoriteCityModel.createFavoriteCity(e))
+              .toList());
         }
       });
     } catch (e, stackTrace) {
@@ -139,7 +140,7 @@ class _DailyWeatherState extends State<DailyWeather>
         // if (!_favoriteCities.contains(model)) {
         if (contains == 0) {
           // _favoriteCities.add(_weatherModel!.currentCity);
-          final favCity = FavoriteCity.createFavoriteCity(
+          final favCity = FavoriteCityModel.createFavoriteCity(
               {"name": _weatherModel!.currentCity, "home": false});
           _favoriteCities.add(favCity);
         } else {
@@ -186,7 +187,7 @@ class _DailyWeatherState extends State<DailyWeather>
     if (!_locationPermission) return null;
     Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    WeatherModel? model = await WeatherService.getWeatherByCoords(pos);
+    DailyWeatherModel? model = await WeatherService.getWeatherByCoords(pos);
     if (model == null) return;
 
     final List<dynamic>? weeklyWeatherData =
@@ -256,32 +257,6 @@ class _DailyWeatherState extends State<DailyWeather>
         ? SearchLocationWeather(
             cityGestureHandler: _cityGestureHandler,
             favoriteCities: _favoriteCities)
-        // Column(
-        //         children: [
-        //           Padding(
-        //             padding: EdgeInsets.symmetric(vertical: 30.0),
-        //             child: Container(
-        //               width: MediaQuery.of(context).size.width * 0.9,
-        //               child: Image.asset("assets/images/cloud_colored4.png"),
-        //             ),
-        //           ),
-        //           GestureDetector(
-        //             onTap: _cityGestureHandler,
-        //             child: Container(
-        //               decoration: const BoxDecoration(
-        //                 border: Border(
-        //                   top: BorderSide(color: Colors.black, width: 3.0),
-        //                   bottom: BorderSide(color: Colors.black, width: 3.0),
-        //                 ),
-        //               ),
-        //               child: const Text(
-        //                 "Tap to search",
-        //                 style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
-        //               ),
-        //             ),
-        //           ),
-        //         ],
-        //       )
         : _weatherModel == null
             ? _loadingWeatherData
             : Column(

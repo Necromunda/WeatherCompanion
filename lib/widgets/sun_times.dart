@@ -5,7 +5,7 @@ import 'package:weather_icons/weather_icons.dart';
 import '../models/weather_model.dart';
 
 class SunTimes extends StatelessWidget {
-  final WeatherModel weatherModel;
+  final DailyWeatherModel weatherModel;
 
   const SunTimes({Key? key, required this.weatherModel}) : super(key: key);
 
