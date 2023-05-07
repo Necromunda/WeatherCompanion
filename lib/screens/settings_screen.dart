@@ -21,7 +21,9 @@ class _SettingsState extends State<SettingsScreen> {
   final TextEditingController _textFieldController = TextEditingController();
   late final bool _locationPermission = widget.locationPermission;
   String? _hometown;
-  bool _showTextfield = false;
+  late bool _showTextfield;
+  late DateTime _lastRequest;
+
   // List<FavoriteCityModel> _favoriteCities = [];
   // late final List<Map<String, dynamic>> elements = [
   //   {
@@ -77,6 +79,9 @@ class _SettingsState extends State<SettingsScreen> {
   }
 
   void _initPlatformState() async {
+    setState(() {
+      _showTextfield = false;
+    });
     _getHometown().then((value) async {
       if (value == null && _locationPermission) {
         final name = await _getCurrentCityByPos();
@@ -87,6 +92,7 @@ class _SettingsState extends State<SettingsScreen> {
       } else {
         setState(() {
           _hometown = value ?? "Not set";
+          _lastRequest = DateTime.now();
         });
       }
     });
@@ -123,8 +129,23 @@ class _SettingsState extends State<SettingsScreen> {
   Future<String?> _getCurrentCityByPos() async {
     Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
+    print(pos);
     String? name = await WeatherService.getCityByCoords(pos);
     return name;
+  }
+
+  bool _allowRequest() {
+    DateTime now = DateTime.now();
+    // print(now.second);
+    // print((now.second - _lastRequest.second));
+    if ((now.second - _lastRequest.second) > 10) {
+      setState(() {
+        _lastRequest = now;
+      });
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // Widget get _getExpansionTile {
@@ -176,13 +197,31 @@ class _SettingsState extends State<SettingsScreen> {
         hintText: "City",
         suffixIcon: IconButton(
           onPressed: () {
-            WeatherService.getCoordsByCity(_textFieldController.text).then((value) {
+            WeatherService.getCoordsByCity(_textFieldController.text)
+                .then((value) {
               print(value);
+              if (value != null) {
+                Position pos = Position(
+                    longitude: value["lon"]!,
+                    latitude: value["lat"]!,
+                    timestamp: DateTime.now(),
+                    accuracy: 0.0,
+                    altitude: 0.0,
+                    heading: 0.0,
+                    speed: 0.0,
+                    speedAccuracy: 0.0);
+                WeatherService.getCityByCoords(pos).then((value) {
+                  setState(() {
+                    _hometown = value;
+                  });
+                  Util.saveToPrefs("home", value);
+                });
+              }
             });
             setState(() {
-              // Navigator.pop(context);
+              _showTextfield = !_showTextfield;
+              _textFieldController.clear();
             });
-            _textFieldController.clear();
           },
           icon: Icon(
             Icons.search,
@@ -200,6 +239,8 @@ class _SettingsState extends State<SettingsScreen> {
     );
   }
 
+  int get _diff => 10 - (DateTime.now().second - _lastRequest.second);
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -210,7 +251,7 @@ class _SettingsState extends State<SettingsScreen> {
             elevation: 8,
             child: ExpansionTile(
               title: const Text('Set hometown'),
-              subtitle: Text("Current: $_hometown"),
+              subtitle: Text("Current: ${_hometown ?? "Not set"}"),
               leading: const Icon(Icons.home, color: Colors.green),
               children: <Widget>[
                 ListTile(
@@ -226,16 +267,23 @@ class _SettingsState extends State<SettingsScreen> {
                   //       )
                   //     : null,
                   onTap: () {
-                    // _dropDownHandler("current");
-                    _getCurrentCityByPos().then((value) {
-                      _dropDownHandler(value);
-                    });
+                    // print(DateTime.now().second - _lastRequest.second);
+                    bool res = _allowRequest();
+                    if (res) {
+                      _getCurrentCityByPos().then((value) {
+                        _dropDownHandler(value);
+                      });
+                    } else {
+                      Util.showSnackBar(context, "Please wait $_diff seconds between requests");
+                    }
                   },
                   enabled: _locationPermission,
                 ),
                 ListTile(
                   // title: _showTextfield ? _searchTextField : const Text("Set your city"),
-                  title: _searchTextField,
+                  title: _showTextfield
+                      ? _searchTextField
+                      : const Text("Set your city"),
                   leading: const Icon(
                     Icons.search,
                     color: Colors.blue,
@@ -247,7 +295,9 @@ class _SettingsState extends State<SettingsScreen> {
                   //       )
                   //     : null,
                   onTap: () {
-                    _showTextfield = !_showTextfield;
+                    setState(() {
+                      _showTextfield = !_showTextfield;
+                    });
                   },
                 ),
                 // ExpansionTile(
@@ -280,10 +330,14 @@ class _SettingsState extends State<SettingsScreen> {
               title: const Text("Clear cache"),
               leading: const Icon(Icons.delete, color: Colors.red),
               onTap: () async {
-                Util.clearPrefs();
-                Util.checkSharedPreferencesMemoryUsage().then((size) {
-                  Util.showSnackBar(context, "$size bytes cleared.");
+                setState(() {
+                  _hometown = null;
                 });
+                Util.clearPrefs();
+                Util.showSnackBar(context, "Cache cleared");
+                // Util.checkSharedPreferencesMemoryUsage().then((size) {
+                //   Util.showSnackBar(context, "$size bytes cleared.");
+                // });
               },
             ),
           ),

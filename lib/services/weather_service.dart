@@ -96,6 +96,8 @@ class WeatherService {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
+        if (data.isEmpty) return null;
+        print("hello");
         return {"lat": data[0]["lat"], "lon": data[0]["lon"]};
       } else {
         print("Error getting coords by city");
