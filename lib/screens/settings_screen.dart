@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:grouped_list/grouped_list.dart';
-import 'package:weather_app/models/favorite_city_model.dart';
-import 'package:weather_app/services/weather_service.dart';
-import 'package:weather_app/util.dart';
+
+import '../util.dart';
+
+import '../services/weather_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   final bool locationPermission;
@@ -22,54 +22,8 @@ class _SettingsState extends State<SettingsScreen> {
   late final bool _locationPermission = widget.locationPermission;
   String? _hometown;
   late bool _showTextfield;
-  late DateTime _lastRequest;
-
-  // List<FavoriteCityModel> _favoriteCities = [];
-  // late final List<Map<String, dynamic>> elements = [
-  //   {
-  //     "group": "Application settings",
-  //     "element": ExpansionTile(
-  //       title: const Text('Set hometown'),
-  //       leading: const Icon(Icons.home, color: Colors.green),
-  //       children: <Widget>[
-  //         ListTile(
-  //           title: const Text("Current location"),
-  //           trailing: _hometown == "current"
-  //               ? const Icon(
-  //                   Icons.home,
-  //                   color: Colors.green,
-  //                 )
-  //               : null,
-  //           onTap: () => _dropDownHandler("current"),
-  //         ),
-  //         ..._favoriteCities.map((city) {
-  //           return ListTile(
-  //               title: Text(city.name),
-  //               trailing: _hometown != city.name
-  //                   ? null
-  //                   : const Icon(
-  //                       Icons.home,
-  //                       color: Colors.green,
-  //                     ),
-  //               onTap: () => _dropDownHandler(city.name));
-  //         })
-  //       ],
-  //     ),
-  //   },
-  //   {
-  //     "group": "Application settings",
-  //     "element": ListTile(
-  //       title: const Text("Clear cache"),
-  //       leading: const Icon(Icons.delete, color: Colors.red),
-  //       onTap: () async {
-  //         Util.clearPrefs();
-  //         Util.checkSharedPreferencesMemoryUsage().then((size) {
-  //           Util.showSnackBar(context, "$size bytes cleared.");
-  //         });
-  //       },
-  //     ),
-  //   },
-  // ];
+  DateTime? _lastRequest;
+  final int _timeBetweenRequests = 15;
 
   @override
   void initState() {
@@ -92,7 +46,7 @@ class _SettingsState extends State<SettingsScreen> {
       } else {
         setState(() {
           _hometown = value ?? "Not set";
-          _lastRequest = DateTime.now();
+          // _lastRequest = DateTime.now();
         });
       }
     });
@@ -129,16 +83,22 @@ class _SettingsState extends State<SettingsScreen> {
   Future<String?> _getCurrentCityByPos() async {
     Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    print(pos);
+    // print(pos);
     String? name = await WeatherService.getCityByCoords(pos);
     return name;
   }
 
   bool _allowRequest() {
     DateTime now = DateTime.now();
-    // print(now.second);
-    // print((now.second - _lastRequest.second));
-    if ((now.second - _lastRequest.second) > 10) {
+    if (_lastRequest == null) {
+      setState(() {
+        _lastRequest = DateTime.now();
+      });
+      return true;
+    }
+    Duration difference = now.difference(_lastRequest!);
+
+    if (difference >= Duration(seconds: _timeBetweenRequests)) {
       setState(() {
         _lastRequest = now;
       });
@@ -147,37 +107,6 @@ class _SettingsState extends State<SettingsScreen> {
       return false;
     }
   }
-
-  // Widget get _getExpansionTile {
-  //   return ExpansionTile(
-  //     title: const Text('Set hometown'),
-  //     leading: const Icon(Icons.home, color: Colors.green),
-  //     children: <Widget>[
-  //       ListTile(
-  //         title: const Text("Current location"),
-  //         trailing: _hometown == "current"
-  //             ? const Icon(
-  //                 Icons.home,
-  //                 color: Colors.green,
-  //               )
-  //             : null,
-  //         onTap: () => _dropDownHandler("current"),
-  //         enabled: !_locationPermission,
-  //       ),
-  //       ..._favoriteCities.map((city) {
-  //         return ListTile(
-  //             title: Text(city.name),
-  //             trailing: _hometown != city.name
-  //                 ? null
-  //                 : const Icon(
-  //                     Icons.home,
-  //                     color: Colors.green,
-  //                   ),
-  //             onTap: () => _dropDownHandler(city.name));
-  //       })
-  //     ],
-  //   );
-  // }
 
   void _dropDownHandler(String? city) {
     if (city != null) Util.saveToPrefs("home", city);
@@ -188,40 +117,53 @@ class _SettingsState extends State<SettingsScreen> {
 
   TextField get _searchTextField {
     return TextField(
+      maxLength: 30,
       autofocus: true,
       style: const TextStyle(color: Color(0xFFC256F1)),
       keyboardType: TextInputType.text,
       cursorColor: const Color(0xFFE0C3FC),
       controller: _textFieldController,
+      onTapOutside: (_) {
+        setState(() {
+          _showTextfield = !_showTextfield;
+          _textFieldController.clear();
+        });
+      },
       decoration: InputDecoration(
         hintText: "City",
         suffixIcon: IconButton(
           onPressed: () {
-            WeatherService.getCoordsByCity(_textFieldController.text)
-                .then((value) {
-              print(value);
-              if (value != null) {
-                Position pos = Position(
-                    longitude: value["lon"]!,
-                    latitude: value["lat"]!,
-                    timestamp: DateTime.now(),
-                    accuracy: 0.0,
-                    altitude: 0.0,
-                    heading: 0.0,
-                    speed: 0.0,
-                    speedAccuracy: 0.0);
-                WeatherService.getCityByCoords(pos).then((value) {
-                  setState(() {
-                    _hometown = value;
+            bool res = _allowRequest();
+            if (res) {
+              WeatherService.getCoordsByCity(_textFieldController.text)
+                  .then((value) {
+                print(value);
+                if (value != null) {
+                  Position pos = Position(
+                      longitude: value["lon"]!,
+                      latitude: value["lat"]!,
+                      timestamp: DateTime.now(),
+                      accuracy: 0.0,
+                      altitude: 0.0,
+                      heading: 0.0,
+                      speed: 0.0,
+                      speedAccuracy: 0.0);
+                  WeatherService.getCityByCoords(pos).then((value) {
+                    setState(() {
+                      _hometown = value;
+                    });
+                    Util.saveToPrefs("home", value);
                   });
-                  Util.saveToPrefs("home", value);
-                });
-              }
-            });
-            setState(() {
-              _showTextfield = !_showTextfield;
-              _textFieldController.clear();
-            });
+                }
+              });
+              setState(() {
+                _showTextfield = !_showTextfield;
+                _textFieldController.clear();
+              });
+            } else {
+              Util.showSnackBar(context,
+                  "Please wait $_allowRequestIn seconds between requests");
+            }
           },
           icon: Icon(
             Icons.search,
@@ -239,7 +181,9 @@ class _SettingsState extends State<SettingsScreen> {
     );
   }
 
-  int get _diff => 10 - (DateTime.now().second - _lastRequest.second);
+  int get _allowRequestIn =>
+      _timeBetweenRequests -
+      DateTime.now().difference(_lastRequest ?? DateTime.now()).inSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -260,27 +204,20 @@ class _SettingsState extends State<SettingsScreen> {
                     Icons.location_on_outlined,
                     color: Colors.blue,
                   ),
-                  // trailing: _hometown == "current"
-                  //     ? const Icon(
-                  //         Icons.home,
-                  //         color: Colors.green,
-                  //       )
-                  //     : null,
                   onTap: () {
-                    // print(DateTime.now().second - _lastRequest.second);
                     bool res = _allowRequest();
                     if (res) {
                       _getCurrentCityByPos().then((value) {
                         _dropDownHandler(value);
                       });
                     } else {
-                      Util.showSnackBar(context, "Please wait $_diff seconds between requests");
+                      Util.showSnackBar(context,
+                          "Please wait $_allowRequestIn seconds between requests");
                     }
                   },
                   enabled: _locationPermission,
                 ),
                 ListTile(
-                  // title: _showTextfield ? _searchTextField : const Text("Set your city"),
                   title: _showTextfield
                       ? _searchTextField
                       : const Text("Set your city"),
@@ -288,12 +225,6 @@ class _SettingsState extends State<SettingsScreen> {
                     Icons.search,
                     color: Colors.blue,
                   ),
-                  // trailing: _hometown == "search"
-                  //     ? const Icon(
-                  //         Icons.home,
-                  //         color: Colors.green,
-                  //       )
-                  //     : null,
                   onTap: () {
                     setState(() {
                       _showTextfield = !_showTextfield;
@@ -329,7 +260,8 @@ class _SettingsState extends State<SettingsScreen> {
             child: ListTile(
               title: const Text("Clear cache"),
               leading: const Icon(Icons.delete, color: Colors.red),
-              onTap: () async {
+              // onTap: () async {
+              onTap: () {
                 setState(() {
                   _hometown = null;
                 });
@@ -344,27 +276,5 @@ class _SettingsState extends State<SettingsScreen> {
         ),
       ],
     );
-    // return Padding(
-    //   padding: const EdgeInsets.all(5),
-    //   child: GroupedListView(
-    //     elements: elements,
-    //     groupBy: (element) => element["group"],
-    //     groupSeparatorBuilder: (String value) => Padding(
-    //       padding: const EdgeInsets.all(8.0),
-    //       child: Text(
-    //         value,
-    //         textAlign: TextAlign.center,
-    //         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-    //       ),
-    //     ),
-    //     itemBuilder: (c, element) {
-    //       return Card(
-    //         elevation: 8,
-    //         margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-    //         child: element["element"],
-    //       );
-    //     },
-    //   ),
-    // );
   }
 }

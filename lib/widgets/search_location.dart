@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/models/favorite_city_model.dart';
+
+import '../models/favorite_city_model.dart';
 
 class SearchLocationWeather extends StatefulWidget {
   final Function cityGestureHandler;

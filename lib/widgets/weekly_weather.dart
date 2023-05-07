@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:weather_app/widgets/weather_info_card.dart';
-import 'package:weather_app/widgets/weather_temps.dart';
+
+import '/widgets/weather_info_card.dart';
+import '/widgets/weather_temps.dart';
 
 import '../models/weekly_weather_model.dart';
 

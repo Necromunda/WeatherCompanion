@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/screens/weather_screen.dart';
 
 import '../screens/history_screen.dart';
 import '../screens/settings_screen.dart';
-import 'daily_weather.dart';
+import '../screens/weather_screen.dart';
 
 class PageContainer extends StatefulWidget {
   final bool locationPermission;
@@ -75,10 +74,13 @@ class _PageContainerState extends State<PageContainer> {
             child: PageView(
               controller: _pageController,
               children: <Widget>[
-                SettingsScreen(locationPermission: _locationPermission),
+                SettingsScreen(
+                  locationPermission: _locationPermission,
+                ),
                 Weather(
                   locationPermission: _locationPermission,
                   addPreviousSearch: _addPreviousSearch,
+                  // updateWeatherScreen: _updateWeatherScreen,
                 ),
                 WeatherHistoryScreen(
                   locationPermission: _locationPermission,

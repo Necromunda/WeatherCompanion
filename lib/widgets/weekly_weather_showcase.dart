@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/screens/weekly_weather_screen.dart';
+
+import '../screens/weekly_weather_screen.dart';
 
 import '../models/weekly_weather_model.dart';
 

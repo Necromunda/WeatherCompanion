@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:weather_app/models/weather_model.dart';
+
+import '../models/weather_model.dart';
 
 class WeatherService {
   static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
