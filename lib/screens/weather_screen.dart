@@ -1,5 +1,4 @@
 /* TODO
-Add slider to display every day to weeklyweatherpreview
 Add possibility to see full weather from history
  */
 
@@ -72,11 +71,7 @@ class _WeatherState extends State<Weather>
   }
 
   void _initPlatformState() async {
-    // setState(() {
-    // _lastRequest = DateTime.now();
-    // });
     _getHometown().then((home) {
-      // print(home);
       if (home == null) {
         _getCurrentPositionWeather();
       } else {
@@ -115,7 +110,6 @@ class _WeatherState extends State<Weather>
   Future<String?> _getHometown() async {
     try {
       final value = await Util.loadFromPrefs("home");
-      // print(value);
       return jsonDecode(value);
     } catch (_) {
       return null;
@@ -199,9 +193,7 @@ class _WeatherState extends State<Weather>
       if (model != null) {
         final contains =
             _favoriteCities.where((element) => element.name == model).length;
-        // if (!_favoriteCities.contains(model)) {
         if (contains == 0) {
-          // _favoriteCities.add(_weatherModel!.currentCity);
           final favCity = FavoriteCityModel.createFavoriteCity(
               {"name": _weatherModel!.currentCity, "home": false});
           _favoriteCities.add(favCity);
@@ -225,12 +217,14 @@ class _WeatherState extends State<Weather>
         return;
       }
 
-      Map<String, double>? coords = await WeatherService.getCoordsByCity(city);
-      if (coords == null) return;
+      // Map<String, double>? coords = await WeatherService.getCoordsByCity(city);
+      // if (coords == null) return;
 
       final List<dynamic>? weeklyWeatherData =
           await WeatherService.getWeeklyWeatherByCoords(
-              coords["lat"]!, coords["lon"]!);
+              // coords["lat"]!, coords["lon"]!);
+              dailyWeatherData.lat!,
+              dailyWeatherData.lon!);
       if (weeklyWeatherData == null) {
         Util.showSnackBar(context, "No weekly data found for $city");
         return;
@@ -240,10 +234,14 @@ class _WeatherState extends State<Weather>
         _weatherModel = dailyWeatherData;
         _weeklyWeather = _parseWeekData(weeklyWeatherData);
       });
+      // widget.addPreviousSearch({
+      //   "name": _weatherModel!.currentCity,
+      //   "temp": _weatherModel!.temp,
+      //   "date": DateTime.now(),
+      // });
       widget.addPreviousSearch({
-        "name": _weatherModel!.currentCity,
-        "temp": _weatherModel!.temp,
-        "date": DateTime.now(),
+        "daily": _weatherModel,
+        "weekly": _weeklyWeather
       });
     } else {
       Util.showSnackBar(
@@ -251,7 +249,8 @@ class _WeatherState extends State<Weather>
     }
   }
 
-  void _getHometownWeather(String home) {
+/*  void _getHometownWeather(String home) {
+    // print("hometown");
     WeatherService.getCoordsByCity(home).then((value) async {
       if (value != null) {
         Position pos = Position(
@@ -275,12 +274,38 @@ class _WeatherState extends State<Weather>
           _weatherModel = model;
           _weeklyWeather = _parseWeekData(weeklyWeatherData);
         });
-        widget.addPreviousSearch({
-          "name": _weatherModel!.currentCity,
-          "temp": _weatherModel!.temp,
-          "date": DateTime.now(),
-        });
+        // widget.addPreviousSearch({
+        //   "name": _weatherModel!.currentCity,
+        //   "temp": _weatherModel!.temp,
+        //   "date": DateTime.now(),
+        // });
+        widget.addPreviousSearch(_weatherModel);
       }
+    });
+  }*/
+
+  void _getHometownWeather(String home) async {
+    DailyWeatherModel? dailyWeatherModel =
+        await WeatherService.getWeatherByCity(home);
+    if (dailyWeatherModel == null) return;
+
+    final List<dynamic>? weeklyWeatherData =
+        await WeatherService.getWeeklyWeatherByCoords(
+            dailyWeatherModel.lat!, dailyWeatherModel.lon!);
+    if (weeklyWeatherData == null) return;
+
+    setState(() {
+      _weatherModel = dailyWeatherModel;
+      _weeklyWeather = _parseWeekData(weeklyWeatherData);
+    });
+    // widget.addPreviousSearch({
+    //   "name": _weatherModel!.currentCity,
+    //   "temp": _weatherModel!.temp,
+    //   "date": DateTime.now(),
+    // });
+    widget.addPreviousSearch({
+      "daily": _weatherModel,
+      "weekly": _weeklyWeather
     });
   }
 
@@ -300,10 +325,14 @@ class _WeatherState extends State<Weather>
       _weatherModel = model;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
+    // widget.addPreviousSearch({
+    //   "name": _weatherModel!.currentCity,
+    //   "temp": _weatherModel!.temp,
+    //   "date": DateTime.now(),
+    // });
     widget.addPreviousSearch({
-      "name": _weatherModel!.currentCity,
-      "temp": _weatherModel!.temp,
-      "date": DateTime.now(),
+      "daily": _weatherModel,
+      "weekly": _weeklyWeather
     });
   }
 
@@ -318,7 +347,7 @@ class _WeatherState extends State<Weather>
               .then((value) => parsedDates.add(value!));
         }
       }
-      if (parsedDates.length < 4 && parsedDates.isNotEmpty) {
+      if (parsedDates.length != 5) {
         WeeklyWeatherModel.createWeeklyWeatherModel(data.last)
             .then((value) => parsedDates.add(value!));
       }
@@ -353,7 +382,6 @@ class _WeatherState extends State<Weather>
   Widget build(BuildContext context) {
     super.build(context);
     print("rebuilding daily weather");
-    // _getFavoriteCities();
 
     return !_locationPermission && _weatherModel == null
         ? _weatherModel == null

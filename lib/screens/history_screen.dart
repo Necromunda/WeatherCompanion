@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+
+import '../models/weather_model.dart';
+import '/screens/history_weather_screen.dart';
 
 class WeatherHistoryScreen extends StatefulWidget {
   final bool locationPermission;
-  final List<Map<String, dynamic>> previousSearches;
+  // final List<Map<String, dynamic>> previousSearches;
+  final List<DailyWeatherModel> previousSearches;
 
   const WeatherHistoryScreen(
       {Key? key,
@@ -18,10 +21,9 @@ class WeatherHistoryScreen extends StatefulWidget {
 
 class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
     with AutomaticKeepAliveClientMixin<WeatherHistoryScreen> {
-  late final bool _locationPermission = widget.locationPermission;
-  late final List<Map<String, dynamic>> _previousSearches =
+  // late final List<Map<String, dynamic>> _previousSearches =
+  late final List<DailyWeatherModel> _previousSearches =
       widget.previousSearches;
-  late Position? _currentPos = null;
   bool _nameAscending = true;
   bool _dateAscending = true;
   bool _tempAscending = true;
@@ -36,20 +38,8 @@ class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
   @override
   void initState() {
     super.initState();
-    // _initPlatformState();
     print("weatherhistory initstate");
   }
-
-  // void _initPlatformState() async {
-  //   _currentPos = await _getCurrentPosition();
-  //   setState(() {});
-  // }
-  //
-  // Future<Position?> _getCurrentPosition() async {
-  //   if (!_locationPermission) return null;
-  //   return Geolocator.getCurrentPosition(
-  //       desiredAccuracy: LocationAccuracy.high);
-  // }
 
   @override
   bool get wantKeepAlive => true;
@@ -59,38 +49,46 @@ class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
       switch (type) {
         case "name":
           if (_nameAscending) {
-            _previousSearches.sort((a, b) => a["name"]
+            // _previousSearches.sort((a, b) => a["name"]
+            _previousSearches.sort((a, b) => a.currentCity
                 .toString()
                 .toLowerCase()
-                .compareTo(b["name"].toString().toLowerCase()));
+                // .compareTo(b["name"].toString().toLowerCase()));
+                .compareTo(b.currentCity.toString().toLowerCase()));
             _nameAscending = !_nameAscending;
           } else {
-            _previousSearches.sort((a, b) => b["name"]
+            // _previousSearches.sort((a, b) => b["name"]
+            _previousSearches.sort((a, b) => b.currentCity
                 .toString()
                 .toLowerCase()
-                .compareTo(a["name"].toString().toLowerCase()));
+                // .compareTo(a["name"].toString().toLowerCase()));
+                .compareTo(a.currentCity.toString().toLowerCase()));
             _nameAscending = !_nameAscending;
           }
           break;
         case "date":
           if (_dateAscending) {
             _previousSearches.sort((a, b) =>
-                (a["date"] as DateTime).compareTo(b["date"] as DateTime));
+                // (a["date"] as DateTime).compareTo(b["date"] as DateTime));
+                (a.dt as DateTime).compareTo(b.dt as DateTime));
             _dateAscending = !_dateAscending;
           } else {
             _previousSearches.sort((a, b) =>
-                (b["date"] as DateTime).compareTo(a["date"] as DateTime));
+                // (b["date"] as DateTime).compareTo(a["date"] as DateTime));
+                (b.dt as DateTime).compareTo(a.dt as DateTime));
             _dateAscending = !_dateAscending;
           }
           break;
         case "temp":
           if (_tempAscending) {
             _previousSearches.sort(
-                (a, b) => (a["temp"] as double).compareTo(b["temp"] as double));
+                // (a, b) => (a["temp"] as double).compareTo(b["temp"] as double));
+                (a, b) => (a.temp!).compareTo(b.temp!));
             _tempAscending = !_tempAscending;
           } else {
             _previousSearches.sort(
-                (a, b) => (b["temp"] as double).compareTo(a["temp"] as double));
+                // (a, b) => (b["temp"] as double).compareTo(a["temp"] as double));
+                (a, b) => (b.temp!).compareTo(a.temp!));
             _tempAscending = !_tempAscending;
           }
           break;
@@ -157,20 +155,21 @@ class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
                 child: ListView.builder(
                   itemBuilder: (context, index) {
                     return ListTile(
-                      onTap: null,
-                      // () => Navigator.push(
-                      // context,
-                      // MaterialPageRoute(
-                      //   builder: (context) => Settings(),
-                      // )),
+                      onTap: 
+                      () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HistoryWeatherScreen(dailyWeatherModel: _previousSearches[index]),
+                      ),),
                       title: Text(
-                        _previousSearches[index]["name"],
+                        // _previousSearches[index]["name"],
+                        _previousSearches[index].currentCity,
                         style: const TextStyle(fontSize: 20),
                       ),
                       subtitle: Text(DateFormat.MMMMEEEEd()
-                          .format(_previousSearches[index]["date"])),
+                          .format(_previousSearches[index].dt!)),
                       trailing: Text(
-                        "${(_previousSearches[index]["temp"] as double).round()}°C",
+                        "${(_previousSearches[index].temp!).round()}°C",
                         style: const TextStyle(fontSize: 20),
                       ),
                     );
