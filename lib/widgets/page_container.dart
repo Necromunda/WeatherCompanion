@@ -20,11 +20,11 @@ class _PageContainerState extends State<PageContainer> {
   late final bool _locationPermission = widget.locationPermission;
   int _selectedIndex = 1;
   final PageController _pageController = PageController(initialPage: 1);
-  // List<Map<String, dynamic>> _previousSearches = [];
-  List<DailyWeatherModel> _previousSearches = [];
+  List<Map<String, dynamic>> _previousSearches = [];
+  // List<DailyWeatherModel> _previousSearches = [];
 
-  // void _addPreviousSearch(Map<String, dynamic> previousSearch) {
-  void _addPreviousSearch(DailyWeatherModel previousSearch) {
+  void _addPreviousSearch(Map<String, dynamic> previousSearch) {
+  // void _addPreviousSearch(DailyWeatherModel previousSearch) {
     setState(() {
       _previousSearches.add(previousSearch);
     });

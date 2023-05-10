@@ -5,9 +5,10 @@ import 'package:weather_app/widgets/history_weather.dart';
 import '../models/weather_model.dart';
 
 class HistoryWeatherScreen extends StatelessWidget {
-  final DailyWeatherModel dailyWeatherModel;
+  final Map<String, dynamic> weatherMap;
 
-  const HistoryWeatherScreen({Key? key, required this.dailyWeatherModel}) : super(key: key);
+  const HistoryWeatherScreen({Key? key, required this.weatherMap})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,10 @@ class HistoryWeatherScreen extends StatelessWidget {
         title: const Text("Weather companion"),
         centerTitle: true,
       ),
-      body: HistoryWeather(dailyWeatherModel: dailyWeatherModel),
+      body: HistoryWeather(
+        dailyWeatherModel: weatherMap["daily"],
+        weeklyWeatherModelsList: weatherMap["weekly"],
+      ),
     );
   }
 }

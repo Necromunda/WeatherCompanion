@@ -239,10 +239,8 @@ class _WeatherState extends State<Weather>
       //   "temp": _weatherModel!.temp,
       //   "date": DateTime.now(),
       // });
-      widget.addPreviousSearch({
-        "daily": _weatherModel,
-        "weekly": _weeklyWeather
-      });
+      widget.addPreviousSearch(
+          {"daily": _weatherModel, "weekly": _weeklyWeather});
     } else {
       Util.showSnackBar(
           context, "Please wait $_allowRequestIn seconds between requests");
@@ -303,10 +301,8 @@ class _WeatherState extends State<Weather>
     //   "temp": _weatherModel!.temp,
     //   "date": DateTime.now(),
     // });
-    widget.addPreviousSearch({
-      "daily": _weatherModel,
-      "weekly": _weeklyWeather
-    });
+    widget
+        .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
   }
 
   void _getCurrentPositionWeather() async {
@@ -330,10 +326,8 @@ class _WeatherState extends State<Weather>
     //   "temp": _weatherModel!.temp,
     //   "date": DateTime.now(),
     // });
-    widget.addPreviousSearch({
-      "daily": _weatherModel,
-      "weekly": _weeklyWeather
-    });
+    widget
+        .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
   }
 
   List<WeeklyWeatherModel>? _parseWeekData(List<dynamic> data) {
@@ -384,11 +378,9 @@ class _WeatherState extends State<Weather>
     print("rebuilding daily weather");
 
     return !_locationPermission && _weatherModel == null
-        ? _weatherModel == null
-            ? _loadingWeatherData
-            : SearchLocationWeather(
-                cityGestureHandler: _cityGestureHandler,
-                favoriteCities: _favoriteCities)
+        ? SearchLocationWeather(
+            cityGestureHandler: _cityGestureHandler,
+            favoriteCities: _favoriteCities)
         : _weatherModel == null
             ? _loadingWeatherData
             : Column(

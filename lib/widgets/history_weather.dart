@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app/models/weather_model.dart';
+import 'package:weather_app/models/weekly_weather_model.dart';
 import 'package:weather_app/widgets/sun_times.dart';
 import 'package:weather_app/widgets/weather_info_card.dart';
 import 'package:weather_app/widgets/weather_temps.dart';
+import 'package:weather_app/widgets/weekly_weather_showcase.dart';
 
 class HistoryWeather extends StatelessWidget {
   final DailyWeatherModel dailyWeatherModel;
+  final List<WeeklyWeatherModel> weeklyWeatherModelsList;
 
-  const HistoryWeather({Key? key, required this.dailyWeatherModel})
-      : super(key: key);
+  const HistoryWeather({
+    Key? key,
+    required this.dailyWeatherModel,
+    required this.weeklyWeatherModelsList,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +87,7 @@ class HistoryWeather extends StatelessWidget {
         ),
         Expanded(
           child: WeeklyWeatherShowcase(
-            weeklyWeather: _weeklyWeather!,
+            weeklyWeather: weeklyWeatherModelsList,
           ),
         ),
       ],
