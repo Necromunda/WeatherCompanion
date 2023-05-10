@@ -331,17 +331,19 @@ class _WeatherState extends State<Weather>
   }
 
   List<WeeklyWeatherModel>? _parseWeekData(List<dynamic> data) {
+    int daysAdded = 0;
     try {
       List<WeeklyWeatherModel> parsedDates = [];
 
       for (final obj in data) {
         DateTime dt = DateTime.parse(obj["dt_txt"]);
         if (dt.hour == 12 && dt.day != DateTime.now().day) {
+          daysAdded++;
           WeeklyWeatherModel.createWeeklyWeatherModel(obj)
               .then((value) => parsedDates.add(value!));
         }
       }
-      if (parsedDates.length != 5) {
+      if (daysAdded < 5) {
         WeeklyWeatherModel.createWeeklyWeatherModel(data.last)
             .then((value) => parsedDates.add(value!));
       }
