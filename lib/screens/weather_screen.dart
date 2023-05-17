@@ -14,7 +14,7 @@ import '../util.dart';
 import '../services/weather_service.dart';
 
 import '../models/favorite_city_model.dart';
-import '../models/weather_model.dart';
+import '../models/daily_weather_model.dart';
 import '../models/weekly_weather_model.dart';
 
 import '../widgets/search_location.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
 
-import '../models/weather_model.dart';
+import '../models/daily_weather_model.dart';
 
 class SunTimes extends StatelessWidget {
   final DailyWeatherModel weatherModel;

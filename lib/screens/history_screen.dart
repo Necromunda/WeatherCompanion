@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../models/weather_model.dart';
+import '../models/daily_weather_model.dart';
 import '/screens/history_weather_screen.dart';
 
 class WeatherHistoryScreen extends StatefulWidget {
