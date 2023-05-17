@@ -2,11 +2,31 @@ import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather_app/models/geocoding_model.dart';
 
 import '../models/daily_weather_model.dart';
 
 class WeatherService {
   static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
+
+  // OpenMeteo api
+  static Future<GeocodingModel?> getGeocodingModel(String city) async {
+    final url = "https://geocoding-api.open-meteo.com/v1/search?name=$city&count=1";
+
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        GeocodingModel model = GeocodingModel.fromJson(jsonDecode(response.body));
+        return model;
+      } else {
+        print("Error getting geocoding data");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
+      return null;
+    }
+  }
 
   static Future<DailyWeatherModel?> getWeatherByCity(String city) async {
     final String url =
@@ -68,7 +88,6 @@ class WeatherService {
     }
   }
 
-  // static Future<List<Map<String, dynamic>>?> getWeeklyWeatherByCoords(
   static Future<List<dynamic>?> getWeeklyWeatherByCoords(
       double lat, double lon) async {
     final String url =

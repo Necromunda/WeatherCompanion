@@ -486,6 +486,10 @@ class _WeatherState extends State<Weather>
                               windDeg: _weatherModel!.windDeg!,
                             ),
                             SunTimes(weatherModel: _weatherModel!),
+                            ElevatedButton(onPressed: () async {
+                              var geoModel = await WeatherService.getGeocodingModel("oulu");
+                              print("${geoModel?.results?[0].name}\nLat: ${geoModel?.results?[0].latitude}, Lon: ${geoModel?.results?[0].longitude}");
+                            }, child: Text("test")),
                           ],
                         ),
                       ],
