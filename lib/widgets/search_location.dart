@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/models/favorite_city_model.dart';
+
+import '../models/favorite_city_model.dart';
 
 class SearchLocationWeather extends StatefulWidget {
   final Function cityGestureHandler;
-  final List<FavoriteCity> favoriteCities;
+  final List<FavoriteCityModel> favoriteCities;
 
   const SearchLocationWeather(
       {Key? key,
@@ -17,7 +18,7 @@ class SearchLocationWeather extends StatefulWidget {
 
 class _SearchLocationWeatherState extends State<SearchLocationWeather> {
   late final Function _cityGestureHandler = widget.cityGestureHandler;
-  late final List<FavoriteCity> _favoriteCities = widget.favoriteCities;
+  late final List<FavoriteCityModel> _favoriteCities = widget.favoriteCities;
 
   @override
   Widget build(BuildContext context) {

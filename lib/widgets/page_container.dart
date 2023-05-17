@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
 
-import '../screens/history.dart';
-import '../screens/settings.dart';
-import 'daily_weather.dart';
+import '../models/daily_weather_model.dart';
+
+import '../screens/history_screen.dart';
+import '../screens/settings_screen.dart';
+import '../screens/weather_screen.dart';
 
 class PageContainer extends StatefulWidget {
   final bool locationPermission;
@@ -20,8 +22,10 @@ class _PageContainerState extends State<PageContainer> {
   int _selectedIndex = 1;
   final PageController _pageController = PageController(initialPage: 1);
   List<Map<String, dynamic>> _previousSearches = [];
+  // List<DailyWeatherModel> _previousSearches = [];
 
   void _addPreviousSearch(Map<String, dynamic> previousSearch) {
+  // void _addPreviousSearch(DailyWeatherModel previousSearch) {
     setState(() {
       _previousSearches.add(previousSearch);
     });
@@ -74,10 +78,15 @@ class _PageContainerState extends State<PageContainer> {
             child: PageView(
               controller: _pageController,
               children: <Widget>[
-                const Settings(),
-                DailyWeather(
-                    locationPermission: _locationPermission, addPreviousSearch: _addPreviousSearch),
-                WeatherHistory(
+                SettingsScreen(
+                  locationPermission: _locationPermission,
+                ),
+                Weather(
+                  locationPermission: _locationPermission,
+                  addPreviousSearch: _addPreviousSearch,
+                  // updateWeatherScreen: _updateWeatherScreen,
+                ),
+                WeatherHistoryScreen(
                   locationPermission: _locationPermission,
                   previousSearches: _previousSearches,
                 ),
@@ -91,8 +100,6 @@ class _PageContainerState extends State<PageContainer> {
           ),
         ],
       ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // floatingActionButton: FloatingActionButton(onPressed: () => WeatherService.getWeeklyWeatherByCoords(65.0118734, 25.4716809)),
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/screens/weekly_weather_screen.dart';
+
+import '../screens/weekly_weather_screen.dart';
+
+import '../models/weekly_weather_model.dart';
 
 class WeeklyWeatherShowcase extends StatelessWidget {
-  final List<Map<String, dynamic>> weeklyWeather;
+  final List<WeeklyWeatherModel> weeklyWeather;
 
   const WeeklyWeatherShowcase({Key? key, required this.weeklyWeather})
       : super(key: key);
@@ -17,27 +20,28 @@ class WeeklyWeatherShowcase extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           ...weeklyWeather.map(
-            (obj) {
+            (model) {
               return GestureDetector(
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => WeeklyWeatherScreen(),
+                    builder: (context) =>
+                        WeeklyWeatherScreen(weeklyWeatherModel: model),
                   ),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      obj["dayAbbr"],
+                      model.dayAbbr!,
                       style: const TextStyle(fontSize: 20),
                     ),
                     Image.network(
-                      "https://openweathermap.org/img/wn/${obj["icon"]}@2x.png",
+                      model.iconUrl!,
                       scale: 1.5,
                     ),
                     Text(
-                      "${(obj["temp"].toDouble()).round()}°C",
+                      "${model.temp!.round()}°C",
                       style: const TextStyle(fontSize: 20),
                     ),
                   ],

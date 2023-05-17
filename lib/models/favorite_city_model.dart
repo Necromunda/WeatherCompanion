@@ -1,11 +1,11 @@
-class FavoriteCity {
+class FavoriteCityModel {
   String name;
   bool home;
 
-  FavoriteCity({required this.name, required this.home});
+  FavoriteCityModel({required this.name, required this.home});
 
-  static FavoriteCity createFavoriteCity(final Map<String, dynamic> data) {
-    return FavoriteCity(name: data["name"], home: data["home"]);
+  static FavoriteCityModel createFavoriteCity(final Map<String, dynamic> data) {
+    return FavoriteCityModel(name: data["name"], home: data["home"]);
   }
 
   Map<String, dynamic> toJson() {

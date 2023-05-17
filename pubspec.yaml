@@ -39,16 +39,12 @@ dependencies:
   permission_handler: ^10.2.0
   http: ^0.13.5
   scaffold_gradient_background: ^1.0.3+1
-  wheel_chooser: ^1.1.2
   geolocator: ^9.0.2
   geocoding: ^2.1.0
   loading_indicator: ^3.1.0
   shared_preferences: ^2.1.0
-  flutter_map: ^3.1.0
-  latlong2: ^0.8.1
-  flutter_map_geojson: ^1.0.1
   weather_icons: ^3.0.0
-  grouped_list: ^5.1.2
+  connectivity_plus: ^3.0.6
 
 dev_dependencies:
   flutter_test:

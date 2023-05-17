@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/models/weather_model.dart';
 
 class WeatherTemperature extends StatelessWidget {
-  final WeatherModel weatherModel;
+  final double temp, tempFeelsLike, tempMin, tempMax;
 
-  const WeatherTemperature({Key? key, required this.weatherModel})
+  const WeatherTemperature(
+      {Key? key,
+      required this.temp,
+      required this.tempFeelsLike,
+      required this.tempMin,
+      required this.tempMax})
       : super(key: key);
 
   @override
@@ -35,24 +39,24 @@ class WeatherTemperature extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "${(weatherModel.tempMin)?.round()}°C",
+              "${(tempMin.round())}°C",
               style: const TextStyle(fontSize: 25),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Text(
-                "${(weatherModel.temp)?.round()}°C",
+                "${temp.round()}°C",
                 style: const TextStyle(fontSize: 40),
               ),
             ),
             Text(
-              "${(weatherModel.tempMax)?.round()}°C",
+              "${tempMax.round()}°C",
               style: const TextStyle(fontSize: 25),
             ),
           ],
         ),
         Text(
-          "Feels like ${(weatherModel.tempFeelsLike)?.round()}°C",
+          "Feels like ${tempFeelsLike.round()}°C",
           style: const TextStyle(fontSize: 20),
         ),
       ],

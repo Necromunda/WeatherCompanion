@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,6 +21,24 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late StreamSubscription<ConnectivityResult> subscription;
+
+  @override
+  initState() {
+    super.initState();
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      print(result);
+    });
+  }
+
+  @override
+  dispose() {
+    subscription.cancel();
+    super.dispose();
+  }
+
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -93,17 +114,14 @@ class _MyAppState extends State<MyApp> {
       ),
       debugShowCheckedModeBanner: false,
       home: FutureBuilder(
-          future: _handleLocationPermission(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Container(
-                // decoration:
-                // BoxDecoration(border: Border.all(color: Colors.red)),
-                child: PageContainer(locationPermission: snapshot.data!),
-              );
-            }
-            return _waitingPermissions;
-          }),
+        future: _handleLocationPermission(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return PageContainer(locationPermission: snapshot.data!);
+          }
+          return _waitingPermissions;
+        },
+      ),
     );
   }
 }

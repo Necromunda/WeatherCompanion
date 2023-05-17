@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
-class WeatherHistory extends StatefulWidget {
+import '../models/daily_weather_model.dart';
+import '/screens/history_weather_screen.dart';
+
+class WeatherHistoryScreen extends StatefulWidget {
   final bool locationPermission;
   final List<Map<String, dynamic>> previousSearches;
+  // final List<DailyWeatherModel> previousSearches;
 
-  const WeatherHistory(
+  const WeatherHistoryScreen(
       {Key? key,
       required this.locationPermission,
       required this.previousSearches})
       : super(key: key);
 
   @override
-  State<WeatherHistory> createState() => _WeatherHistoryState();
+  State<WeatherHistoryScreen> createState() => _WeatherHistoryScreenState();
 }
 
-class _WeatherHistoryState extends State<WeatherHistory>
-    with AutomaticKeepAliveClientMixin<WeatherHistory> {
-  late final bool _locationPermission = widget.locationPermission;
+class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
+    with AutomaticKeepAliveClientMixin<WeatherHistoryScreen> {
   late final List<Map<String, dynamic>> _previousSearches =
+  // late final List<DailyWeatherModel> _previousSearches =
       widget.previousSearches;
-  late Position? _currentPos = null;
   bool _nameAscending = true;
   bool _dateAscending = true;
   bool _tempAscending = true;
@@ -36,20 +38,8 @@ class _WeatherHistoryState extends State<WeatherHistory>
   @override
   void initState() {
     super.initState();
-    // _initPlatformState();
     print("weatherhistory initstate");
   }
-
-  // void _initPlatformState() async {
-  //   _currentPos = await _getCurrentPosition();
-  //   setState(() {});
-  // }
-  //
-  // Future<Position?> _getCurrentPosition() async {
-  //   if (!_locationPermission) return null;
-  //   return Geolocator.getCurrentPosition(
-  //       desiredAccuracy: LocationAccuracy.high);
-  // }
 
   @override
   bool get wantKeepAlive => true;
@@ -59,38 +49,46 @@ class _WeatherHistoryState extends State<WeatherHistory>
       switch (type) {
         case "name":
           if (_nameAscending) {
-            _previousSearches.sort((a, b) => a["name"]
+            // _previousSearches.sort((a, b) => a["name"]
+            _previousSearches.sort((a, b) => a["daily"].currentCity
                 .toString()
                 .toLowerCase()
-                .compareTo(b["name"].toString().toLowerCase()));
+                // .compareTo(b["name"].toString().toLowerCase()));
+                .compareTo(b["daily"].currentCity.toString().toLowerCase()));
             _nameAscending = !_nameAscending;
           } else {
-            _previousSearches.sort((a, b) => b["name"]
+            // _previousSearches.sort((a, b) => b["name"]
+            _previousSearches.sort((a, b) => b["daily"].currentCity
                 .toString()
                 .toLowerCase()
-                .compareTo(a["name"].toString().toLowerCase()));
+                // .compareTo(a["name"].toString().toLowerCase()));
+                .compareTo(a["daily"].currentCity.toString().toLowerCase()));
             _nameAscending = !_nameAscending;
           }
           break;
         case "date":
           if (_dateAscending) {
             _previousSearches.sort((a, b) =>
-                (a["date"] as DateTime).compareTo(b["date"] as DateTime));
+                // (a["date"] as DateTime).compareTo(b["date"] as DateTime));
+                (a["daily"].dt as DateTime).compareTo(b["daily"].dt as DateTime));
             _dateAscending = !_dateAscending;
           } else {
             _previousSearches.sort((a, b) =>
-                (b["date"] as DateTime).compareTo(a["date"] as DateTime));
+                // (b["date"] as DateTime).compareTo(a["date"] as DateTime));
+                (b["daily"].dt as DateTime).compareTo(a["daily"].dt as DateTime));
             _dateAscending = !_dateAscending;
           }
           break;
         case "temp":
           if (_tempAscending) {
             _previousSearches.sort(
-                (a, b) => (a["temp"] as double).compareTo(b["temp"] as double));
+                // (a, b) => (a["temp"] as double).compareTo(b["temp"] as double));
+                (a, b) => (a["daily"].temp!).compareTo(b["daily"].temp!));
             _tempAscending = !_tempAscending;
           } else {
             _previousSearches.sort(
-                (a, b) => (b["temp"] as double).compareTo(a["temp"] as double));
+                // (a, b) => (b["temp"] as double).compareTo(a["temp"] as double));
+                (a, b) => (b["daily"].temp!).compareTo(a["daily"].temp!));
             _tempAscending = !_tempAscending;
           }
           break;
@@ -157,20 +155,21 @@ class _WeatherHistoryState extends State<WeatherHistory>
                 child: ListView.builder(
                   itemBuilder: (context, index) {
                     return ListTile(
-                      onTap: null,
-                      // () => Navigator.push(
-                      // context,
-                      // MaterialPageRoute(
-                      //   builder: (context) => Settings(),
-                      // )),
+                      onTap: 
+                      () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HistoryWeatherScreen(weatherMap: _previousSearches[index]),
+                      ),),
                       title: Text(
-                        _previousSearches[index]["name"],
+                        // _previousSearches[index]["name"],
+                        _previousSearches[index]["daily"].currentCity,
                         style: const TextStyle(fontSize: 20),
                       ),
                       subtitle: Text(DateFormat.MMMMEEEEd()
-                          .format(_previousSearches[index]["date"])),
+                          .format(_previousSearches[index]["daily"].dt!)),
                       trailing: Text(
-                        "${(_previousSearches[index]["temp"] as double).round()}°C",
+                        "${(_previousSearches[index]["daily"].temp!).round()}°C",
                         style: const TextStyle(fontSize: 20),
                       ),
                     );
