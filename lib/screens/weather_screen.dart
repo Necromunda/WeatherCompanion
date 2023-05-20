@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:weather_app/models/openmeteo_weather_model.dart';
 
 import '../util.dart';
 
@@ -46,6 +47,7 @@ class _WeatherState extends State<Weather>
   List<WeeklyWeatherModel>? _weeklyWeather;
   DateTime? _lastRequest;
   final int _timeBetweenRequests = 30;
+  WeatherModel? _openMeteoModel;
 
   @override
   bool get wantKeepAlive => true;
@@ -222,7 +224,6 @@ class _WeatherState extends State<Weather>
 
       final List<dynamic>? weeklyWeatherData =
           await WeatherService.getWeeklyWeatherByCoords(
-              // coords["lat"]!, coords["lon"]!);
               dailyWeatherData.lat!,
               dailyWeatherData.lon!);
       if (weeklyWeatherData == null) {
@@ -234,11 +235,6 @@ class _WeatherState extends State<Weather>
         _weatherModel = dailyWeatherData;
         _weeklyWeather = _parseWeekData(weeklyWeatherData);
       });
-      // widget.addPreviousSearch({
-      //   "name": _weatherModel!.currentCity,
-      //   "temp": _weatherModel!.temp,
-      //   "date": DateTime.now(),
-      // });
       widget.addPreviousSearch(
           {"daily": _weatherModel, "weekly": _weeklyWeather});
     } else {
@@ -296,11 +292,6 @@ class _WeatherState extends State<Weather>
       _weatherModel = dailyWeatherModel;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    // widget.addPreviousSearch({
-    //   "name": _weatherModel!.currentCity,
-    //   "temp": _weatherModel!.temp,
-    //   "date": DateTime.now(),
-    // });
     widget
         .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
   }
@@ -321,11 +312,6 @@ class _WeatherState extends State<Weather>
       _weatherModel = model;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    // widget.addPreviousSearch({
-    //   "name": _weatherModel!.currentCity,
-    //   "temp": _weatherModel!.temp,
-    //   "date": DateTime.now(),
-    // });
     widget
         .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
   }
@@ -383,7 +369,8 @@ class _WeatherState extends State<Weather>
         ? SearchLocationWeather(
             cityGestureHandler: _cityGestureHandler,
             favoriteCities: _favoriteCities)
-        : _weatherModel == null
+        // : _weatherModel == null
+        : _openMeteoModel == null
             ? _loadingWeatherData
             : Column(
                 children: [
@@ -488,8 +475,12 @@ class _WeatherState extends State<Weather>
                             SunTimes(weatherModel: _weatherModel!),
                             ElevatedButton(onPressed: () async {
                               var geoModel = await WeatherService.getGeocodingModel("oulu");
-                              print("${geoModel?.results?[0].name}\nLat: ${geoModel?.results?[0].latitude}, Lon: ${geoModel?.results?[0].longitude}");
-                            }, child: Text("test")),
+                              if (geoModel?.results?[0].latitude != null && geoModel?.results?[0].longitude != null) {
+                                var weatherModel = await WeatherService.getOpenMeteoWeatherModel(geoModel!.results![0].latitude!, geoModel.results![0].longitude!);
+                                print(weatherModel?.currentWeather?.temperature);
+                              }
+                              print(geoModel?.results?[0].city);
+                            }, child: const Text("test")),
                           ],
                         ),
                       ],

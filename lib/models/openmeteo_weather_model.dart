@@ -5,7 +5,7 @@ class WeatherModel {
   int? utcOffsetSeconds;
   String? timezone;
   String? timezoneAbbreviation;
-  int? elevation;
+  double? elevation;
   CurrentWeather? currentWeather;
   HourlyUnits? hourlyUnits;
   Hourly? hourly;
@@ -78,7 +78,7 @@ class WeatherModel {
 class CurrentWeather {
   double? temperature;
   double? windspeed;
-  int? winddirection;
+  double? winddirection;
   int? weathercode;
   int? isDay;
   String? time;

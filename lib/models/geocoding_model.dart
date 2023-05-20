@@ -62,6 +62,8 @@ class Results {
         this.admin2,
         this.admin3});
 
+  String get city =>"$name, $countryCode";
+
   Results.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];

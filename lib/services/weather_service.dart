@@ -3,13 +3,30 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:weather_app/models/geocoding_model.dart';
+import 'package:weather_app/models/openmeteo_weather_model.dart';
 
 import '../models/daily_weather_model.dart';
 
 class WeatherService {
-  static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
+  /*--------------------------------OPEN METEO--------------------------------*/
+  static Future<WeatherModel?> getOpenMeteoWeatherModel(double lat, double lon) async {
+    final url = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&hourly=temperature_2m,relativehumidity_2m,apparent_temperature,precipitation,weathercode,pressure_msl,visibility,windspeed_10m,is_day&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&current_weather=true&timezone=auto";
 
-  // OpenMeteo api
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        WeatherModel model = WeatherModel.fromJson(jsonDecode(response.body));
+        return model;
+      } else {
+        print("Error getting geocoding data");
+        return null;
+      }
+    } catch (e, stacktrace) {
+      print("$e, $stacktrace");
+      return null;
+    }
+  }
+
   static Future<GeocodingModel?> getGeocodingModel(String city) async {
     final url = "https://geocoding-api.open-meteo.com/v1/search?name=$city&count=1";
 
@@ -27,6 +44,9 @@ class WeatherService {
       return null;
     }
   }
+
+  /*--------------------------------OPEN WEATHER MAP--------------------------------*/
+  static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
 
   static Future<DailyWeatherModel?> getWeatherByCity(String city) async {
     final String url =
