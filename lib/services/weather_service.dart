@@ -46,6 +46,7 @@ class WeatherService {
   }
 
   /*--------------------------------OPEN WEATHER MAP--------------------------------*/
+  /*
   static const String apiKey = "361d62e05c932bca9c667b4ac45db37f";
 
   static Future<DailyWeatherModel?> getWeatherByCity(String city) async {
@@ -148,4 +149,6 @@ class WeatherService {
       return null;
     }
   }
+  */
+
 }

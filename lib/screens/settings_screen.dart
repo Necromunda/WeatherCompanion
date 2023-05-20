@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:weather_app/models/openmeteo_weather_model.dart';
 
 import '../util.dart';
 
@@ -32,31 +33,41 @@ class _SettingsState extends State<SettingsScreen> {
     print("settingsInitState");
   }
 
+  // void _initPlatformState() async {
+  //   setState(() {
+  //     _showTextfield = false;
+  //   });
+  //   _getHometown().then((value) async {
+  //     if (value == null && _locationPermission) {
+  //       final name = await _getCurrentCityByPos();
+  //       Util.saveToPrefs("home", name);
+  //       setState(() {
+  //         _hometown = name ?? "Not set";
+  //       });
+  //     } else {
+  //       setState(() {
+  //         _hometown = value ?? "Not set";
+  //         // _lastRequest = DateTime.now();
+  //       });
+  //     }
+  //   });
+  //   // _getFavoriteCities();
+  // }
+
   void _initPlatformState() async {
     setState(() {
       _showTextfield = false;
     });
     _getHometown().then((value) async {
-      if (value == null && _locationPermission) {
-        final name = await _getCurrentCityByPos();
-        Util.saveToPrefs("home", name);
-        setState(() {
-          _hometown = name ?? "Not set";
-        });
-      } else {
-        setState(() {
-          _hometown = value ?? "Not set";
-          // _lastRequest = DateTime.now();
-        });
-      }
+      setState(() {
+        _hometown = value ?? "Not set";
+      });
     });
-    // _getFavoriteCities();
   }
 
   Future<String?> _getHometown() async {
     try {
       final value = await Util.loadFromPrefs("home");
-      // print(value);
       return jsonDecode(value);
     } catch (_) {
       return null;
@@ -80,13 +91,18 @@ class _SettingsState extends State<SettingsScreen> {
   //   }
   // }
 
-  Future<String?> _getCurrentCityByPos() async {
-    Position pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    // print(pos);
-    String? name = await WeatherService.getCityByCoords(pos);
-    return name;
-  }
+  // Future<String?> _getCurrentCityByPos() async {
+  //   Position pos = await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.high);
+  //   String? name = await WeatherService.getCityByCoords(pos);
+  //   return name;
+  // }
+
+  // Future<String?> _getCurrentCityByPos() async {
+  //   Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  //   WeatherModel? model = await WeatherService.getOpenMeteoWeatherModel(pos.latitude, pos.longitude);
+  //   return model?.currentWeather?.
+  // }
 
   bool _allowRequest() {
     DateTime now = DateTime.now();
@@ -132,28 +148,51 @@ class _SettingsState extends State<SettingsScreen> {
       decoration: InputDecoration(
         hintText: "City",
         suffixIcon: IconButton(
+          // onPressed: () {
+          //   bool res = _allowRequest();
+          //   if (res) {
+          //     WeatherService.getCoordsByCity(_textFieldController.text)
+          //         .then((value) {
+          //       print(value);
+          //       if (value != null) {
+          //         Position pos = Position(
+          //             longitude: value["lon"]!,
+          //             latitude: value["lat"]!,
+          //             timestamp: DateTime.now(),
+          //             accuracy: 0.0,
+          //             altitude: 0.0,
+          //             heading: 0.0,
+          //             speed: 0.0,
+          //             speedAccuracy: 0.0);
+          //         WeatherService.getCityByCoords(pos).then((value) {
+          //           setState(() {
+          //             _hometown = value;
+          //           });
+          //           Util.saveToPrefs("home", value);
+          //         });
+          //       }
+          //     });
+          //     setState(() {
+          //       _showTextfield = !_showTextfield;
+          //       _textFieldController.clear();
+          //     });
+          //   } else {
+          //     Util.showSnackBar(context,
+          //         "Please wait $_allowRequestIn seconds between requests");
+          //   }
+          // },
           onPressed: () {
             bool res = _allowRequest();
             if (res) {
-              WeatherService.getCoordsByCity(_textFieldController.text)
-                  .then((value) {
-                print(value);
-                if (value != null) {
-                  Position pos = Position(
-                      longitude: value["lon"]!,
-                      latitude: value["lat"]!,
-                      timestamp: DateTime.now(),
-                      accuracy: 0.0,
-                      altitude: 0.0,
-                      heading: 0.0,
-                      speed: 0.0,
-                      speedAccuracy: 0.0);
-                  WeatherService.getCityByCoords(pos).then((value) {
-                    setState(() {
-                      _hometown = value;
-                    });
-                    Util.saveToPrefs("home", value);
+              WeatherService.getGeocodingModel(_textFieldController.text)
+                  .then((geoModel) {
+                print(geoModel?.results?[0].city);
+
+                if (geoModel != null) {
+                  setState(() {
+                    _hometown = geoModel.results?[0].city;
                   });
+                  Util.saveToPrefs("home", geoModel.results?[0].city);
                 }
               });
               setState(() {
@@ -207,15 +246,16 @@ class _SettingsState extends State<SettingsScreen> {
                   onTap: () {
                     bool res = _allowRequest();
                     if (res) {
-                      _getCurrentCityByPos().then((value) {
-                        _dropDownHandler(value);
-                      });
+                      // _getCurrentCityByPos().then((value) {
+                      //   _dropDownHandler(value);
+                      // });
                     } else {
                       Util.showSnackBar(context,
                           "Please wait $_allowRequestIn seconds between requests");
                     }
                   },
-                  enabled: _locationPermission,
+                  // enabled: _locationPermission,
+                  enabled: false,
                 ),
                 ListTile(
                   title: _showTextfield
