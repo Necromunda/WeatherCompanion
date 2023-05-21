@@ -22,10 +22,8 @@ class _PageContainerState extends State<PageContainer> {
   int _selectedIndex = 1;
   final PageController _pageController = PageController(initialPage: 1);
   List<Map<String, dynamic>> _previousSearches = [];
-  // List<DailyWeatherModel> _previousSearches = [];
 
   void _addPreviousSearch(Map<String, dynamic> previousSearch) {
-  // void _addPreviousSearch(DailyWeatherModel previousSearch) {
     setState(() {
       _previousSearches.add(previousSearch);
     });
@@ -84,7 +82,6 @@ class _PageContainerState extends State<PageContainer> {
                 Weather(
                   locationPermission: _locationPermission,
                   addPreviousSearch: _addPreviousSearch,
-                  // updateWeatherScreen: _updateWeatherScreen,
                 ),
                 WeatherHistoryScreen(
                   locationPermission: _locationPermission,

@@ -45,7 +45,8 @@ class _WeatherState extends State<Weather>
   DailyWeatherModel? _weatherModel;
   List<WeeklyWeatherModel>? _weeklyWeather;
   DateTime? _lastRequest;
-  final int _timeBetweenRequests = 30;
+  final int _timeBetweenRequests = 5;
+  final PageController _pageController = PageController(initialPage: 0);
 
   @override
   bool get wantKeepAlive => true;
@@ -171,17 +172,19 @@ class _WeatherState extends State<Weather>
             ),
           ),
           actions: <Widget>[
-            ..._favoriteCities.map((city) {
-              return Center(
-                child: TextButton(
-                  child: Text(city.name),
-                  onPressed: () {
-                    _getData(city.name);
-                    Navigator.pop(context);
-                  },
-                ),
-              );
-            })
+            ..._favoriteCities.map(
+              (city) {
+                return Center(
+                  child: TextButton(
+                    child: Text(city.name),
+                    onPressed: () {
+                      _getData(city.name);
+                      Navigator.pop(context);
+                    },
+                  ),
+                );
+              },
+            )
           ],
         );
       },
@@ -217,9 +220,6 @@ class _WeatherState extends State<Weather>
         return;
       }
 
-      // Map<String, double>? coords = await WeatherService.getCoordsByCity(city);
-      // if (coords == null) return;
-
       final List<dynamic>? weeklyWeatherData =
           await WeatherService.getWeeklyWeatherByCoords(
               // coords["lat"]!, coords["lon"]!);
@@ -234,53 +234,14 @@ class _WeatherState extends State<Weather>
         _weatherModel = dailyWeatherData;
         _weeklyWeather = _parseWeekData(weeklyWeatherData);
       });
-      // widget.addPreviousSearch({
-      //   "name": _weatherModel!.currentCity,
-      //   "temp": _weatherModel!.temp,
-      //   "date": DateTime.now(),
-      // });
       widget.addPreviousSearch(
           {"daily": _weatherModel, "weekly": _weeklyWeather});
+      _switchPage(1);
     } else {
       Util.showSnackBar(
           context, "Please wait $_allowRequestIn seconds between requests");
     }
   }
-
-/*  void _getHometownWeather(String home) {
-    // print("hometown");
-    WeatherService.getCoordsByCity(home).then((value) async {
-      if (value != null) {
-        Position pos = Position(
-            longitude: value["lon"]!,
-            latitude: value["lat"]!,
-            timestamp: DateTime.now(),
-            accuracy: 0.0,
-            altitude: 0.0,
-            heading: 0.0,
-            speed: 0.0,
-            speedAccuracy: 0.0);
-        DailyWeatherModel? model = await WeatherService.getWeatherByCoords(pos);
-        if (model == null) return;
-
-        final List<dynamic>? weeklyWeatherData =
-            await WeatherService.getWeeklyWeatherByCoords(
-                pos.latitude, pos.longitude);
-        if (weeklyWeatherData == null) return;
-
-        setState(() {
-          _weatherModel = model;
-          _weeklyWeather = _parseWeekData(weeklyWeatherData);
-        });
-        // widget.addPreviousSearch({
-        //   "name": _weatherModel!.currentCity,
-        //   "temp": _weatherModel!.temp,
-        //   "date": DateTime.now(),
-        // });
-        widget.addPreviousSearch(_weatherModel);
-      }
-    });
-  }*/
 
   void _getHometownWeather(String home) async {
     DailyWeatherModel? dailyWeatherModel =
@@ -296,11 +257,6 @@ class _WeatherState extends State<Weather>
       _weatherModel = dailyWeatherModel;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    // widget.addPreviousSearch({
-    //   "name": _weatherModel!.currentCity,
-    //   "temp": _weatherModel!.temp,
-    //   "date": DateTime.now(),
-    // });
     widget
         .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
   }
@@ -321,11 +277,6 @@ class _WeatherState extends State<Weather>
       _weatherModel = model;
       _weeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    // widget.addPreviousSearch({
-    //   "name": _weatherModel!.currentCity,
-    //   "temp": _weatherModel!.temp,
-    //   "date": DateTime.now(),
-    // });
     widget
         .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
   }
@@ -374,16 +325,30 @@ class _WeatherState extends State<Weather>
     );
   }
 
+  void _switchPage(int index) {
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     print("rebuilding daily weather");
 
-    return !_locationPermission && _weatherModel == null
-        ? SearchLocationWeather(
-            cityGestureHandler: _cityGestureHandler,
-            favoriteCities: _favoriteCities)
-        : _weatherModel == null
+    // return !_locationPermission && _weatherModel == null
+    return PageView(
+      scrollDirection: Axis.vertical,
+      controller: _pageController,
+      children: [
+        SearchLocationWeather(
+          getData: _getData,
+          cityGestureHandler: _cityGestureHandler,
+          favoriteCities: _favoriteCities,
+        ),
+        _weatherModel == null
             ? _loadingWeatherData
             : Column(
                 children: [
@@ -501,6 +466,132 @@ class _WeatherState extends State<Weather>
                           ),
                   ),
                 ],
-              );
+              ),
+      ],
+    );
+    // ,
+    // ? SearchLocationWeather(
+    // cityGestureHandler: _cityGestureHandler,
+    // favoriteCities: _favoriteCities,
+    // )
+    //     : _weatherModel == null
+    // ? _loadingWeatherData
+    //     : Column(
+    // children: [
+    // Expanded(
+    // flex: 3,
+    // child: Column(
+    // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    // children: [
+    // Column(
+    // children: [
+    // Row(
+    // mainAxisAlignment: MainAxisAlignment.center,
+    // children: [
+    // IconButton(
+    // onPressed: null,
+    // icon: Icon(
+    // _favoriteCities
+    //     .where((element) =>
+    // element.name ==
+    // _weatherModel!
+    //     .currentCity &&
+    // element.home)
+    //     .isEmpty
+    // ? null
+    //     : Icons.home,
+    // color: Colors.green,
+    // size: 30,
+    // ),
+    // ),
+    // Container(
+    // decoration: const BoxDecoration(
+    // border: Border(
+    // top: BorderSide(
+    // color: Colors.black, width: 3.0),
+    // bottom: BorderSide(
+    // color: Colors.black, width: 3.0),
+    // ),
+    // ),
+    // child: GestureDetector(
+    // onTap: _cityGestureHandler,
+    // child: Text(
+    // _weatherModel!.currentCity,
+    // style: TextStyle(
+    // fontSize: _weatherModel!.currentCity
+    //     .characters.length <=
+    // 15
+    // ? 35
+    //     : 30,
+    // fontWeight: FontWeight.bold),
+    // ),
+    // ),
+    // ),
+    // IconButton(
+    // onPressed: () => _addToFavorites(
+    // _weatherModel!.currentCity),
+    // icon: Icon(
+    // _favoriteCities
+    //     .where((element) =>
+    // element.name ==
+    // _weatherModel!.currentCity)
+    //     .isEmpty
+    // ? Icons.star_outline
+    //     : Icons.star,
+    // size: 30,
+    // ),
+    // color: _favoriteCities
+    //     .where((element) =>
+    // element.name ==
+    // _weatherModel!.currentCity)
+    //     .isEmpty
+    // ? Colors.grey
+    //     : Colors.yellow,
+    // ),
+    // ],
+    // ),
+    // Padding(
+    // padding: const EdgeInsets.only(top: 15.0),
+    // child: Text(
+    // DateFormat.MMMMEEEEd().format(DateTime.now()),
+    // style: const TextStyle(fontSize: 20),
+    // ),
+    // )
+    // ],
+    // ),
+    // Column(
+    // children: [
+    // WeatherTemperature(
+    // temp: _weatherModel!.temp!,
+    // tempFeelsLike: _weatherModel!.tempFeelsLike!,
+    // tempMin: _weatherModel!.tempMin!,
+    // tempMax: _weatherModel!.tempMax!,
+    // ),
+    // WeatherInfoCard(
+    // iconUrl: _weatherModel!.iconUrl!,
+    // weatherTypeDescription:
+    // _weatherModel!.weatherTypeDescription!,
+    // visibility: _weatherModel!.visibility!,
+    // humidity: _weatherModel!.humidity!,
+    // pressure: _weatherModel!.pressure!,
+    // windDeg: _weatherModel!.windDeg!,
+    // ),
+    // SunTimes(weatherModel: _weatherModel!),
+    // ],
+    // ),
+    // ],
+    // ),
+    // ),
+    // Expanded(
+    // child: _weeklyWeather == null
+    // ? Center(
+    // child: _loadingWeatherData,
+    // )
+    //     : WeeklyWeatherShowcase(
+    // weeklyWeather: _weeklyWeather!,
+    // ),
+    // ),
+    // ],
+    // );
   }
 }
