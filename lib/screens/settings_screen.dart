@@ -23,7 +23,7 @@ class _SettingsState extends State<SettingsScreen> {
   String? _hometown;
   late bool _showTextfield;
   DateTime? _lastRequest;
-  final int _timeBetweenRequests = 15;
+  final int _timeBetweenRequests = 5;
 
   @override
   void initState() {
@@ -84,7 +84,7 @@ class _SettingsState extends State<SettingsScreen> {
     Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     // print(pos);
-    String? name = await WeatherService.getCityByCoords(pos);
+    String? name = await WeatherService.getCityByCoords(pos.latitude, pos.longitude);
     return name;
   }
 
@@ -137,18 +137,18 @@ class _SettingsState extends State<SettingsScreen> {
             if (res) {
               WeatherService.getCoordsByCity(_textFieldController.text)
                   .then((value) {
-                print(value);
+                // print(value);
                 if (value != null) {
-                  Position pos = Position(
-                      longitude: value["lon"]!,
-                      latitude: value["lat"]!,
-                      timestamp: DateTime.now(),
-                      accuracy: 0.0,
-                      altitude: 0.0,
-                      heading: 0.0,
-                      speed: 0.0,
-                      speedAccuracy: 0.0);
-                  WeatherService.getCityByCoords(pos).then((value) {
+                  // Position pos = Position(
+                  //     longitude: value["lon"]!,
+                  //     latitude: value["lat"]!,
+                  //     timestamp: DateTime.now(),
+                  //     accuracy: 0.0,
+                  //     altitude: 0.0,
+                  //     heading: 0.0,
+                  //     speed: 0.0,
+                  //     speedAccuracy: 0.0);
+                  WeatherService.getCityByCoords(value["lat"]!, value["lon"]!).then((value) {
                     setState(() {
                       _hometown = value;
                     });

@@ -191,22 +191,59 @@ class _WeatherState extends State<Weather>
     );
   }
 
+  // void _addToFavorites(String? model) {
+  //   setState(() {
+  //     if (model != null) {
+  //       final contains =
+  //           _favoriteCities.where((element) => element.name == model).length;
+  //       if (contains == 0) {
+  //         final favCity = FavoriteCityModel.createFavoriteCity(
+  //             {"name": _weatherModel!.currentCity, "home": false});
+  //         _favoriteCities.add(favCity);
+  //       } else {
+  //         _favoriteCities.remove(_favoriteCities[
+  //             _favoriteCities.indexWhere((element) => element.name == model)]);
+  //       }
+  //       Util.saveToPrefs("favoriteCities", _favoriteCities);
+  //     }
+  //   });
+  // }
+
   void _addToFavorites(String? model) {
-    setState(() {
-      if (model != null) {
-        final contains =
-            _favoriteCities.where((element) => element.name == model).length;
-        if (contains == 0) {
-          final favCity = FavoriteCityModel.createFavoriteCity(
-              {"name": _weatherModel!.currentCity, "home": false});
-          _favoriteCities.add(favCity);
-        } else {
-          _favoriteCities.remove(_favoriteCities[
-              _favoriteCities.indexWhere((element) => element.name == model)]);
-        }
-        Util.saveToPrefs("favoriteCities", _favoriteCities);
+    if (model != null) {
+      if (_favoriteCities.length + 1 > 5) {
+        Util.showSnackBar(context, "You have 5/5 cities favorited");
+        return;
       }
-    });
+      final bool contains = _isInFavorites(model);
+      if (!contains) {
+        final favCity = FavoriteCityModel.createFavoriteCity(
+            {"name": _weatherModel!.currentCity, "home": false});
+        setState(() => _favoriteCities.add(favCity));
+      }
+      Util.saveToPrefs("favoriteCities", _favoriteCities);
+    }
+  }
+
+  void _removeFromFavorites(String? model) {
+    if (model != null) {
+      setState(() {
+        _favoriteCities.remove(_favoriteCities[
+            _favoriteCities.indexWhere((element) => element.name == model)]);
+      });
+      Util.saveToPrefs("favoriteCities", _favoriteCities);
+    }
+  }
+
+  bool _isInFavorites(String? model) {
+    if (model != null) {
+      final contains =
+          _favoriteCities.where((element) => element.name == model).isNotEmpty;
+      print(contains);
+      return contains;
+    } else {
+      return true;
+    }
   }
 
   void _cityGestureHandler() => _displayTextInputDialog(context);
@@ -348,125 +385,136 @@ class _WeatherState extends State<Weather>
           cityGestureHandler: _cityGestureHandler,
           favoriteCities: _favoriteCities,
         ),
-        _weatherModel == null
-            ? _loadingWeatherData
-            : Column(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Column(
+        _weatherModel == null && !_locationPermission
+            ? const Center(
+                child: Text("Enable location in settings or set your hometown"),
+              )
+            : _weatherModel == null && _locationPermission
+                ? _loadingWeatherData
+                : Column(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            Column(
                               children: [
-                                IconButton(
-                                  onPressed: null,
-                                  icon: Icon(
-                                    _favoriteCities
-                                            .where((element) =>
-                                                element.name ==
-                                                    _weatherModel!
-                                                        .currentCity &&
-                                                element.home)
-                                            .isEmpty
-                                        ? null
-                                        : Icons.home,
-                                    color: Colors.green,
-                                    size: 30,
-                                  ),
-                                ),
-                                Container(
-                                  decoration: const BoxDecoration(
-                                    border: Border(
-                                      top: BorderSide(
-                                          color: Colors.black, width: 3.0),
-                                      bottom: BorderSide(
-                                          color: Colors.black, width: 3.0),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: null,
+                                      icon: Icon(
+                                        _favoriteCities
+                                                .where((element) =>
+                                                    element.name ==
+                                                        _weatherModel!
+                                                            .currentCity &&
+                                                    element.home)
+                                                .isEmpty
+                                            ? null
+                                            : Icons.home,
+                                        color: Colors.green,
+                                        size: 30,
+                                      ),
                                     ),
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: _cityGestureHandler,
-                                    child: Text(
-                                      _weatherModel!.currentCity,
-                                      style: TextStyle(
-                                          fontSize: _weatherModel!.currentCity
-                                                      .characters.length <=
-                                                  15
-                                              ? 35
-                                              : 30,
-                                          fontWeight: FontWeight.bold),
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        border: Border(
+                                          top: BorderSide(
+                                              color: Colors.black, width: 3.0),
+                                          bottom: BorderSide(
+                                              color: Colors.black, width: 3.0),
+                                        ),
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: _cityGestureHandler,
+                                        child: Text(
+                                          _weatherModel!.currentCity,
+                                          style: TextStyle(
+                                              fontSize: _weatherModel!
+                                                          .currentCity
+                                                          .characters
+                                                          .length <=
+                                                      15
+                                                  ? 35
+                                                  : 30,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _isInFavorites(_weatherModel!.currentCity)
+                                              ? _removeFromFavorites(
+                                                  _weatherModel!.currentCity)
+                                              : _addToFavorites(
+                                                  _weatherModel!.currentCity),
+                                      icon: Icon(
+                                        _favoriteCities
+                                                .where((element) =>
+                                                    element.name ==
+                                                    _weatherModel!.currentCity)
+                                                .isEmpty
+                                            ? Icons.star_outline
+                                            : Icons.star,
+                                        size: 30,
+                                      ),
+                                      color: _favoriteCities
+                                              .where((element) =>
+                                                  element.name ==
+                                                  _weatherModel!.currentCity)
+                                              .isEmpty
+                                          ? Colors.grey
+                                          : Colors.yellow,
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  onPressed: () => _addToFavorites(
-                                      _weatherModel!.currentCity),
-                                  icon: Icon(
-                                    _favoriteCities
-                                            .where((element) =>
-                                                element.name ==
-                                                _weatherModel!.currentCity)
-                                            .isEmpty
-                                        ? Icons.star_outline
-                                        : Icons.star,
-                                    size: 30,
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 15.0),
+                                  child: Text(
+                                    DateFormat.MMMMEEEEd()
+                                        .format(DateTime.now()),
+                                    style: const TextStyle(fontSize: 20),
                                   ),
-                                  color: _favoriteCities
-                                          .where((element) =>
-                                              element.name ==
-                                              _weatherModel!.currentCity)
-                                          .isEmpty
-                                      ? Colors.grey
-                                      : Colors.yellow,
-                                ),
+                                )
                               ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 15.0),
-                              child: Text(
-                                DateFormat.MMMMEEEEd().format(DateTime.now()),
-                                style: const TextStyle(fontSize: 20),
+                            Column(
+                              children: [
+                                WeatherTemperature(
+                                  temp: _weatherModel!.temp!,
+                                  tempFeelsLike: _weatherModel!.tempFeelsLike!,
+                                  tempMin: _weatherModel!.tempMin!,
+                                  tempMax: _weatherModel!.tempMax!,
+                                ),
+                                WeatherInfoCard(
+                                  iconUrl: _weatherModel!.iconUrl!,
+                                  weatherTypeDescription:
+                                      _weatherModel!.weatherTypeDescription!,
+                                  visibility: _weatherModel!.visibility!,
+                                  humidity: _weatherModel!.humidity!,
+                                  pressure: _weatherModel!.pressure!,
+                                  windDeg: _weatherModel!.windDeg!,
+                                ),
+                                SunTimes(weatherModel: _weatherModel!),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: _weeklyWeather == null
+                            ? Center(
+                                child: _loadingWeatherData,
+                              )
+                            : WeeklyWeatherShowcase(
+                                weeklyWeather: _weeklyWeather!,
                               ),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            WeatherTemperature(
-                              temp: _weatherModel!.temp!,
-                              tempFeelsLike: _weatherModel!.tempFeelsLike!,
-                              tempMin: _weatherModel!.tempMin!,
-                              tempMax: _weatherModel!.tempMax!,
-                            ),
-                            WeatherInfoCard(
-                              iconUrl: _weatherModel!.iconUrl!,
-                              weatherTypeDescription:
-                                  _weatherModel!.weatherTypeDescription!,
-                              visibility: _weatherModel!.visibility!,
-                              humidity: _weatherModel!.humidity!,
-                              pressure: _weatherModel!.pressure!,
-                              windDeg: _weatherModel!.windDeg!,
-                            ),
-                            SunTimes(weatherModel: _weatherModel!),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: _weeklyWeather == null
-                        ? Center(
-                            child: _loadingWeatherData,
-                          )
-                        : WeeklyWeatherShowcase(
-                            weeklyWeather: _weeklyWeather!,
-                          ),
-                  ),
-                ],
-              ),
       ],
     );
     // ,

@@ -48,9 +48,9 @@ class WeatherService {
     }
   }
 
-  static Future<String?> getCityByCoords(Position position) async {
+  static Future<String?> getCityByCoords(double lat, double lon) async {
     final String url =
-        "http://api.openweathermap.org/geo/1.0/reverse?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey";
+        "http://api.openweathermap.org/geo/1.0/reverse?lat=$lat&lon=$lon&appid=$apiKey";
     print(url);
     try {
       var response = await http.get(Uri.parse(url));
@@ -98,7 +98,6 @@ class WeatherService {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         if (data.isEmpty) return null;
-        print("hello");
         return {"lat": data[0]["lat"], "lon": data[0]["lon"]};
       } else {
         print("Error getting coords by city");

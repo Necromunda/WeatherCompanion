@@ -78,45 +78,83 @@ class _SearchLocationWeatherState extends State<SearchLocationWeather> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 30.0),
-          child: SizedBox(
+          padding: const EdgeInsets.only(top: 30.0),
+          child:
+          SizedBox(
             width: MediaQuery.of(context).size.width * 0.9,
             child: _favoriteCities.isEmpty
                 ? null
-                : Card(
-                    // elevation: 7,
-                    child: Column(
+                : Container(
+                    decoration: const BoxDecoration(
+                      // border: Border.all(color: Color(0xFFE0C3FC), width: 3.0),
+                      border: Border(
+                        top: BorderSide(color: Colors.black, width: 1.0),
+                        bottom: BorderSide(color: Colors.black, width: 1.0),
+                      ),
+                      // color: Color(0xFFE0C3FC),
+                    ),
+                    child: ExpansionTile(
+                      title: Text(
+                        "Favorites (${_favoriteCities.length}/5)",
+                        style: const TextStyle(fontSize: 20),
+                      ),
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 10.0),
-                          child: Text(
-                            "Quickmenu",
-                            style: TextStyle(fontSize: 25),
+                        Container(
+                          height: MediaQuery.of(context).size.height * 0.3,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _favoriteCities.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                // shape: Border(bottom: BorderSide(color: Colors.black, width: 1.0),),
+                                title: Text(
+                                  _favoriteCities[index].name,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                // subtitle: Text(_favoriteCities[index].home.toString()),
+                                trailing: const Icon(Icons.search),
+                                onTap: () =>
+                                    _getData(_favoriteCities[index].name),
+                              );
+                            },
                           ),
                         ),
-                        ..._favoriteCities.map(
-                          (city) {
-                            return Center(
-                              child: TextButton(
-                                child: Text(
-                                  city.name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: Color(0xFF8EC5FC),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _getData(city.name);
-                                },
-                              ),
-                            );
-                          },
-                        )
                       ],
                     ),
                   ),
+
+            // child: Column(
+            //   children: [
+            //     Padding(
+            //       padding: const EdgeInsets.only(top: 10.0),
+            //       child: Text(
+            //         "Favorites (${_favoriteCities.length}/5)",
+            //         style: const TextStyle(fontSize: 20),
+            //       ),
+            //     ),
+            //     ..._favoriteCities.map(
+            //       (city) {
+            //         return Center(
+            //           child: TextButton(
+            //             child: Text(
+            //               city.name,
+            //               style: const TextStyle(
+            //                 fontSize: 18,
+            //                 color: Color(0xFF8EC5FC),
+            //               ),
+            //             ),
+            //             onPressed: () {
+            //               _getData(city.name);
+            //             },
+            //           ),
+            //         );
+            //       },
+            //     )
+            //   ],
+            // ),
           ),
         ),
+        // ),
       ],
     );
   }
