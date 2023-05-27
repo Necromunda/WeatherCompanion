@@ -11,7 +11,7 @@ class WeeklyWeatherModel {
       visibility,
       windDeg;
 
-  String? weatherType, weatherTypeDescription, icon, iconUrl, dayAbbr;
+  String? weatherType, weatherTypeDescription, icon, iconUrl, dayAbbr, dt_txt;
 
   DateTime? dt;
 
@@ -32,6 +32,29 @@ class WeeklyWeatherModel {
     this.dayAbbr,
     this.dt,
   });
+
+  WeeklyWeatherModel.fromJson(Map<String, dynamic> json) {
+    // print(json["dt_txt"]);
+    DateTime json_dt = DateTime.parse(json["dt_txt"]);
+
+    weatherType = json["weather"][0]["main"];
+    weatherTypeDescription = json["weather"][0]["description"];
+    icon = json["weather"][0]["icon"];
+    temp = json["main"]["temp"].toDouble();
+    tempFeelsLike = json["main"]["feels_like"].toDouble();
+    tempMin = json["main"]["temp_min"].toDouble();
+    tempMax = json["main"]["temp_max"].toDouble();
+    pressure = json["main"]["pressure"].toDouble();
+    humidity = json["main"]["humidity"].toDouble();
+    visibility = json["visibility"].toDouble();
+    windSpeed = json["wind"]["speed"].toDouble();
+    windDeg = json["wind"]["deg"].toDouble();
+    iconUrl =
+    "https://openweathermap.org/img/wn/${json["weather"][0]["icon"]}@2x.png";
+    dayAbbr = DateFormat.E().format(json_dt);
+    dt = json_dt;
+    dt_txt = json["dt_txt"];
+  }
 
   static Future<WeeklyWeatherModel?> createWeeklyWeatherModel(
       final Map<String, dynamic> data) async {

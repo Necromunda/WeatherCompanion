@@ -48,6 +48,7 @@ class _WeatherState extends State<Weather>
   DateTime? _lastRequest;
   final int _timeBetweenRequests = 5;
   final PageController _pageController = PageController(initialPage: 0);
+  final ScrollController _listScrollController = ScrollController();
   late bool _isCurrentWeatherSelected;
 
   @override
@@ -273,6 +274,9 @@ class _WeatherState extends State<Weather>
       setState(() {
         _weatherModel = dailyWeatherData;
         // _weeklyWeather = _parseWeekData(weeklyWeatherData);
+        _weeklyWeather = weeklyWeatherData
+            .map((e) => WeeklyWeatherModel.fromJson(e))
+            .toList();
         _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
       });
       widget.addPreviousSearch(
@@ -299,6 +303,9 @@ class _WeatherState extends State<Weather>
     setState(() {
       _weatherModel = dailyWeatherModel;
       // _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      _weeklyWeather =
+          weeklyWeatherData.map((e) => WeeklyWeatherModel.fromJson(e)).toList();
+      print(_weeklyWeather?.length);
       _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
     });
     widget.addPreviousSearch(
@@ -322,6 +329,8 @@ class _WeatherState extends State<Weather>
     setState(() {
       _weatherModel = model;
       // _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      _weeklyWeather =
+          weeklyWeatherData.map((e) => WeeklyWeatherModel.fromJson(e)).toList();
       _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
     });
     widget.addPreviousSearch(
@@ -455,7 +464,40 @@ class _WeatherState extends State<Weather>
                       !_isCurrentWeatherSelected
                           ? Expanded(
                               flex: 3,
-                              child: Placeholder(),
+                              child: NotificationListener<ScrollNotification>(
+                                onNotification: (notification) {
+                                  if (notification
+                                          is ScrollUpdateNotification &&
+                                      _listScrollController.position.pixels ==
+                                          -1) {
+                                    _pageController.previousPage(
+                                        duration: Duration(milliseconds: 300),
+                                        curve: Curves.ease);
+                                  }
+                                  return false;
+                                },
+                                child: ListView.builder(
+                                  controller: _listScrollController,
+                                  physics: BouncingScrollPhysics(),
+                                  itemCount: _weeklyWeather?.length,
+                                  itemBuilder: (context, index) {
+                                    String date = DateFormat("d.M")
+                                        .format(_weeklyWeather![index].dt!);
+                                    String time = DateFormat("HH:mm")
+                                        .format(_weeklyWeather![index].dt!);
+                                    String day = DateFormat("EEEE")
+                                        .format(_weeklyWeather![index].dt!);
+
+                                    return Card(
+                                      child: ListTile(
+                                        title: Text("$date, $time"),
+                                        subtitle: Text(day),
+                                        // "${_weeklyWeather?[index].dt_txt}"),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             )
                           : Expanded(
                               flex: 3,
@@ -584,7 +626,8 @@ class _WeatherState extends State<Weather>
                                 child: _loadingWeatherData,
                               )
                             : WeeklyWeatherShowcase(
-                                weeklyWeather: _weeklyWeather!,
+                                // weeklyWeather: _weeklyWeather!,
+                                weeklyWeather: _parsedWeeklyWeather!,
                               ),
                       ),
                     ],
