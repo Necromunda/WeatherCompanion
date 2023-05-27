@@ -44,9 +44,11 @@ class _WeatherState extends State<Weather>
   late final bool _locationPermission = widget.locationPermission;
   DailyWeatherModel? _weatherModel;
   List<WeeklyWeatherModel>? _weeklyWeather;
+  List<WeeklyWeatherModel>? _parsedWeeklyWeather;
   DateTime? _lastRequest;
   final int _timeBetweenRequests = 5;
   final PageController _pageController = PageController(initialPage: 0);
+  late bool _isCurrentWeatherSelected;
 
   @override
   bool get wantKeepAlive => true;
@@ -72,6 +74,7 @@ class _WeatherState extends State<Weather>
   }
 
   void _initPlatformState() async {
+    _isCurrentWeatherSelected = true;
     _getHometown().then((home) {
       if (home == null) {
         _getCurrentPositionWeather();
@@ -269,10 +272,13 @@ class _WeatherState extends State<Weather>
 
       setState(() {
         _weatherModel = dailyWeatherData;
-        _weeklyWeather = _parseWeekData(weeklyWeatherData);
+        // _weeklyWeather = _parseWeekData(weeklyWeatherData);
+        _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
       });
       widget.addPreviousSearch(
-          {"daily": _weatherModel, "weekly": _weeklyWeather});
+        // {"daily": _weatherModel, "weekly": _weeklyWeather});
+        {"daily": _weatherModel, "weekly": _parsedWeeklyWeather},
+      );
       _switchPage(1);
     } else {
       Util.showSnackBar(
@@ -292,10 +298,13 @@ class _WeatherState extends State<Weather>
 
     setState(() {
       _weatherModel = dailyWeatherModel;
-      _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      // _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    widget
-        .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
+    widget.addPreviousSearch(
+      // {"daily": _weatherModel, "weekly": _weeklyWeather},
+      {"daily": _weatherModel, "weekly": _parsedWeeklyWeather},
+    );
   }
 
   void _getCurrentPositionWeather() async {
@@ -312,10 +321,13 @@ class _WeatherState extends State<Weather>
 
     setState(() {
       _weatherModel = model;
-      _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      // _weeklyWeather = _parseWeekData(weeklyWeatherData);
+      _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
     });
-    widget
-        .addPreviousSearch({"daily": _weatherModel, "weekly": _weeklyWeather});
+    widget.addPreviousSearch(
+      // {"daily": _weatherModel, "weekly": _weeklyWeather},
+      {"daily": _weatherModel, "weekly": _parsedWeeklyWeather},
+    );
   }
 
   List<WeeklyWeatherModel>? _parseWeekData(List<dynamic> data) {
@@ -370,6 +382,53 @@ class _WeatherState extends State<Weather>
     );
   }
 
+  void _doubleButtonHandler() {
+    setState(() {
+      _isCurrentWeatherSelected = !_isCurrentWeatherSelected;
+    });
+  }
+
+  Widget get _doubleButton {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        ElevatedButton(
+          onPressed: _doubleButtonHandler,
+          style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(5.0),
+                    bottomLeft: Radius.circular(5.0)),
+              ),
+            ),
+            backgroundColor: MaterialStateProperty.all(_isCurrentWeatherSelected
+                ? const Color(0xFFE0C3FC)
+                : Colors.grey),
+          ),
+          child: const Text("Current"),
+        ),
+        ElevatedButton(
+          onPressed: _doubleButtonHandler,
+          style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(5.0),
+                    bottomRight: Radius.circular(5.0)),
+              ),
+            ),
+            backgroundColor: MaterialStateProperty.all(_isCurrentWeatherSelected
+                ? Colors.grey
+                : const Color(0xFFE0C3FC)),
+          ),
+          child: const Text("Hourly"),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -393,117 +452,132 @@ class _WeatherState extends State<Weather>
                 ? _loadingWeatherData
                 : Column(
                     children: [
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      onPressed: null,
-                                      icon: Icon(
-                                        _favoriteCities
-                                                .where((element) =>
-                                                    element.name ==
-                                                        _weatherModel!
-                                                            .currentCity &&
-                                                    element.home)
-                                                .isEmpty
-                                            ? null
-                                            : Icons.home,
-                                        color: Colors.green,
-                                        size: 30,
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: const BoxDecoration(
-                                        border: Border(
-                                          top: BorderSide(
-                                              color: Colors.black, width: 3.0),
-                                          bottom: BorderSide(
-                                              color: Colors.black, width: 3.0),
-                                        ),
-                                      ),
-                                      child: GestureDetector(
-                                        onTap: _cityGestureHandler,
-                                        child: Text(
-                                          _weatherModel!.currentCity,
-                                          style: TextStyle(
-                                              fontSize: _weatherModel!
-                                                          .currentCity
-                                                          .characters
-                                                          .length <=
-                                                      15
-                                                  ? 35
-                                                  : 30,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          _isInFavorites(_weatherModel!.currentCity)
-                                              ? _removeFromFavorites(
-                                                  _weatherModel!.currentCity)
-                                              : _addToFavorites(
-                                                  _weatherModel!.currentCity),
-                                      icon: Icon(
-                                        _favoriteCities
-                                                .where((element) =>
-                                                    element.name ==
+                      !_isCurrentWeatherSelected
+                          ? Expanded(
+                              flex: 3,
+                              child: Placeholder(),
+                            )
+                          : Expanded(
+                              flex: 3,
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            onPressed: null,
+                                            icon: Icon(
+                                              _favoriteCities
+                                                      .where((element) =>
+                                                          element.name ==
+                                                              _weatherModel!
+                                                                  .currentCity &&
+                                                          element.home)
+                                                      .isEmpty
+                                                  ? null
+                                                  : Icons.home,
+                                              color: Colors.green,
+                                              size: 30,
+                                            ),
+                                          ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                              border: Border(
+                                                top: BorderSide(
+                                                    color: Colors.black,
+                                                    width: 3.0),
+                                                bottom: BorderSide(
+                                                    color: Colors.black,
+                                                    width: 3.0),
+                                              ),
+                                            ),
+                                            child: GestureDetector(
+                                              onTap: _cityGestureHandler,
+                                              child: Text(
+                                                _weatherModel!.currentCity,
+                                                style: TextStyle(
+                                                    fontSize: _weatherModel!
+                                                                .currentCity
+                                                                .characters
+                                                                .length <=
+                                                            15
+                                                        ? 35
+                                                        : 30,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            onPressed: () => _isInFavorites(
                                                     _weatherModel!.currentCity)
-                                                .isEmpty
-                                            ? Icons.star_outline
-                                            : Icons.star,
-                                        size: 30,
+                                                ? _removeFromFavorites(
+                                                    _weatherModel!.currentCity)
+                                                : _addToFavorites(
+                                                    _weatherModel!.currentCity),
+                                            icon: Icon(
+                                              _favoriteCities
+                                                      .where((element) =>
+                                                          element.name ==
+                                                          _weatherModel!
+                                                              .currentCity)
+                                                      .isEmpty
+                                                  ? Icons.star_outline
+                                                  : Icons.star,
+                                              size: 30,
+                                            ),
+                                            color: _favoriteCities
+                                                    .where((element) =>
+                                                        element.name ==
+                                                        _weatherModel!
+                                                            .currentCity)
+                                                    .isEmpty
+                                                ? Colors.grey
+                                                : Colors.yellow,
+                                          ),
+                                        ],
                                       ),
-                                      color: _favoriteCities
-                                              .where((element) =>
-                                                  element.name ==
-                                                  _weatherModel!.currentCity)
-                                              .isEmpty
-                                          ? Colors.grey
-                                          : Colors.yellow,
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 15.0),
-                                  child: Text(
-                                    DateFormat.MMMMEEEEd()
-                                        .format(DateTime.now()),
-                                    style: const TextStyle(fontSize: 20),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 15.0),
+                                        child: Text(
+                                          DateFormat.MMMMEEEEd()
+                                              .format(DateTime.now()),
+                                          style: const TextStyle(fontSize: 20),
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                )
-                              ],
+                                  Column(
+                                    children: [
+                                      WeatherTemperature(
+                                        temp: _weatherModel!.temp!,
+                                        tempFeelsLike:
+                                            _weatherModel!.tempFeelsLike!,
+                                        tempMin: _weatherModel!.tempMin!,
+                                        tempMax: _weatherModel!.tempMax!,
+                                      ),
+                                      WeatherInfoCard(
+                                        iconUrl: _weatherModel!.iconUrl!,
+                                        weatherTypeDescription: _weatherModel!
+                                            .weatherTypeDescription!,
+                                        visibility: _weatherModel!.visibility!,
+                                        humidity: _weatherModel!.humidity!,
+                                        pressure: _weatherModel!.pressure!,
+                                        windDeg: _weatherModel!.windDeg!,
+                                      ),
+                                      SunTimes(weatherModel: _weatherModel!),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            Column(
-                              children: [
-                                WeatherTemperature(
-                                  temp: _weatherModel!.temp!,
-                                  tempFeelsLike: _weatherModel!.tempFeelsLike!,
-                                  tempMin: _weatherModel!.tempMin!,
-                                  tempMax: _weatherModel!.tempMax!,
-                                ),
-                                WeatherInfoCard(
-                                  iconUrl: _weatherModel!.iconUrl!,
-                                  weatherTypeDescription:
-                                      _weatherModel!.weatherTypeDescription!,
-                                  visibility: _weatherModel!.visibility!,
-                                  humidity: _weatherModel!.humidity!,
-                                  pressure: _weatherModel!.pressure!,
-                                  windDeg: _weatherModel!.windDeg!,
-                                ),
-                                SunTimes(weatherModel: _weatherModel!),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      _doubleButton,
                       Expanded(
                         child: _weeklyWeather == null
                             ? Center(
