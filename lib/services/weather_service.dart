@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather_app/models/weekly_weather_model.dart';
 
 import '../models/daily_weather_model.dart';
 
@@ -15,8 +16,8 @@ class WeatherService {
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        DailyWeatherModel? model =
-            await DailyWeatherModel.createWeatherModel(jsonDecode(response.body));
+        DailyWeatherModel? model = await DailyWeatherModel.createWeatherModel(
+            jsonDecode(response.body));
         return model;
       } else {
         print("Error getting weather data");
@@ -28,15 +29,16 @@ class WeatherService {
     }
   }
 
-  static Future<DailyWeatherModel?> getWeatherByCoords(Position position) async {
+  static Future<DailyWeatherModel?> getWeatherByCoords(
+      double? lat, double? lon) async {
     final String url =
-        "http://api.openweathermap.org/data/2.5/weather?units=metric&lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey";
+        "http://api.openweathermap.org/data/2.5/weather?units=metric&lat=$lat&lon=$lon&appid=$apiKey";
     print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        DailyWeatherModel? model =
-            await DailyWeatherModel.createWeatherModel(jsonDecode(response.body));
+        DailyWeatherModel? model = await DailyWeatherModel.createWeatherModel(
+            jsonDecode(response.body));
         return model;
       } else {
         print("Error getting weather data");
@@ -69,8 +71,28 @@ class WeatherService {
   }
 
   // static Future<List<Map<String, dynamic>>?> getWeeklyWeatherByCoords(
-  static Future<List<dynamic>?> getWeeklyWeatherByCoords(
-      double lat, double lon) async {
+  // static Future<List<dynamic>?> getWeeklyWeatherByCoords(
+  //     double lat, double lon) async {
+  //   final String url =
+  //       "http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=$lat&lon=$lon&appid=$apiKey";
+  //   print(url);
+  //   try {
+  //     var response = await http.get(Uri.parse(url));
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       return data["list"];
+  //     } else {
+  //       print("Error getting weather data");
+  //       return null;
+  //     }
+  //   } catch (e, stacktrace) {
+  //     print("$e, $stacktrace");
+  //     return null;
+  //   }
+  // }
+
+  static Future<List<WeeklyWeatherModel>?> getWeeklyWeatherByCoords(
+      double? lat, double? lon) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=$lat&lon=$lon&appid=$apiKey";
     print(url);
@@ -78,9 +100,10 @@ class WeatherService {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data["list"];
+        final List<WeeklyWeatherModel> models = (data["list"] as List).map((e) => WeeklyWeatherModel.fromJson(e)).toList();
+        return models;
       } else {
-        print("Error getting weather data");
+        print("Error getting weekly weather data");
         return null;
       }
     } catch (e, stacktrace) {

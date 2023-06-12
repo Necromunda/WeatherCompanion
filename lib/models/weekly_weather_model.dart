@@ -50,7 +50,7 @@ class WeeklyWeatherModel {
     windSpeed = json["wind"]["speed"].toDouble();
     windDeg = json["wind"]["deg"].toDouble();
     iconUrl =
-    "https://openweathermap.org/img/wn/${json["weather"][0]["icon"]}@2x.png";
+        "https://openweathermap.org/img/wn/${json["weather"][0]["icon"]}@2x.png";
     dayAbbr = DateFormat.E().format(json_dt);
     dt = json_dt;
     dt_txt = json["dt_txt"];

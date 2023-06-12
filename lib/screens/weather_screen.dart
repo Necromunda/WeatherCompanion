@@ -23,6 +23,12 @@ import '../widgets/weather_info_card.dart';
 import '../widgets/weather_temps.dart';
 import '../widgets/weekly_weather_showcase.dart';
 
+enum WeatherData {
+  home,
+  city,
+  location
+}
+
 class Weather extends StatefulWidget {
   final bool locationPermission;
   final Function addPreviousSearch;
@@ -39,17 +45,22 @@ class Weather extends StatefulWidget {
 
 class _WeatherState extends State<Weather>
     with AutomaticKeepAliveClientMixin<Weather> {
-  List<FavoriteCityModel> _favoriteCities = [];
+
   final TextEditingController _textFieldController = TextEditingController();
-  late final bool _locationPermission = widget.locationPermission;
-  DailyWeatherModel? _weatherModel;
-  List<WeeklyWeatherModel>? _weeklyWeather;
-  List<WeeklyWeatherModel>? _parsedWeeklyWeather;
-  DateTime? _lastRequest;
-  final int _timeBetweenRequests = 5;
-  final PageController _pageController = PageController(initialPage: 0);
   final ScrollController _listScrollController = ScrollController();
+  final PageController _pageController = PageController(initialPage: 0);
+
+  DailyWeatherModel? _dailyWeatherModel;
+  List<WeeklyWeatherModel>? _weeklyWeatherModel;
+  List<WeeklyWeatherModel>? _parsedWeeklyWeatherModel;
+  List<FavoriteCityModel> _favoriteCities = [];
+
+  late final bool _locationPermission = widget.locationPermission;
   late bool _isCurrentWeatherSelected;
+
+  final int _timeBetweenRequests = 5;
+
+  DateTime? _lastRequest;
 
   @override
   bool get wantKeepAlive => true;
@@ -76,11 +87,13 @@ class _WeatherState extends State<Weather>
 
   void _initPlatformState() async {
     _isCurrentWeatherSelected = true;
-    _getHometown().then((home) {
-      if (home == null) {
-        _getCurrentPositionWeather();
+    _getHometown().then((hometown) {
+      if (hometown == null) {
+        // _getCurrentPositionWeather();
+        _getWeatherData(WeatherData.location);
       } else {
-        _getHometownWeather(home);
+        // _getHometownWeather(home);
+        _getWeatherData(WeatherData.home, hometown);
       }
     });
     _getFavoriteCities();
@@ -127,7 +140,8 @@ class _WeatherState extends State<Weather>
         if (value != null) {
           List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
           setState(() => _favoriteCities = jsonList
-              .map((e) => FavoriteCityModel.createFavoriteCity(e))
+              // .map((e) => FavoriteCityModel.createFavoriteCity(e))
+              .map((e) => FavoriteCityModel.fromJson(e))
               .toList());
         } else {
           setState(() {
@@ -156,7 +170,8 @@ class _WeatherState extends State<Weather>
               suffixIcon: IconButton(
                 onPressed: () {
                   setState(() {
-                    _getData(_textFieldController.text);
+                    // _getData(_textFieldController.text);
+                    _getWeatherData(WeatherData.city, _textFieldController.text);
                     Navigator.pop(context);
                   });
                   _textFieldController.clear();
@@ -179,13 +194,16 @@ class _WeatherState extends State<Weather>
             ..._favoriteCities.map(
               (city) {
                 return Center(
-                  child: TextButton(
-                    child: Text(city.name),
-                    onPressed: () {
-                      _getData(city.name);
-                      Navigator.pop(context);
-                    },
-                  ),
+                  child: city.name != null
+                      ? TextButton(
+                          child: Text(city.name!),
+                          onPressed: () {
+                            // _getData(city.name!);
+                            _getWeatherData(WeatherData.city, city.name);
+                            Navigator.pop(context);
+                          },
+                        )
+                      : null,
                 );
               },
             )
@@ -195,24 +213,6 @@ class _WeatherState extends State<Weather>
     );
   }
 
-  // void _addToFavorites(String? model) {
-  //   setState(() {
-  //     if (model != null) {
-  //       final contains =
-  //           _favoriteCities.where((element) => element.name == model).length;
-  //       if (contains == 0) {
-  //         final favCity = FavoriteCityModel.createFavoriteCity(
-  //             {"name": _weatherModel!.currentCity, "home": false});
-  //         _favoriteCities.add(favCity);
-  //       } else {
-  //         _favoriteCities.remove(_favoriteCities[
-  //             _favoriteCities.indexWhere((element) => element.name == model)]);
-  //       }
-  //       Util.saveToPrefs("favoriteCities", _favoriteCities);
-  //     }
-  //   });
-  // }
-
   void _addToFavorites(String? model) {
     if (model != null) {
       if (_favoriteCities.length + 1 > 5) {
@@ -221,8 +221,9 @@ class _WeatherState extends State<Weather>
       }
       final bool contains = _isInFavorites(model);
       if (!contains) {
-        final favCity = FavoriteCityModel.createFavoriteCity(
-            {"name": _weatherModel!.currentCity, "home": false});
+        // final favCity = FavoriteCityModel.createFavoriteCity(
+        final favCity = FavoriteCityModel.fromJson(
+            {"name": _dailyWeatherModel?.currentCity, "home": false});
         setState(() => _favoriteCities.add(favCity));
       }
       Util.saveToPrefs("favoriteCities", _favoriteCities);
@@ -243,7 +244,7 @@ class _WeatherState extends State<Weather>
     if (model != null) {
       final contains =
           _favoriteCities.where((element) => element.name == model).isNotEmpty;
-      print(contains);
+      // print(contains);
       return contains;
     } else {
       return true;
@@ -252,109 +253,151 @@ class _WeatherState extends State<Weather>
 
   void _cityGestureHandler() => _displayTextInputDialog(context);
 
-  void _getData(String city) async {
-    bool res = _allowRequest();
-    if (res) {
-      final dailyWeatherData = await WeatherService.getWeatherByCity(city);
-      if (dailyWeatherData == null) {
-        Util.showSnackBar(context, "No data found for $city");
-        return;
-      }
+  void _getWeatherData(WeatherData type, [String? param]) async {
+    DailyWeatherModel? dailyWeatherModel;
+    List<WeeklyWeatherModel>? weeklyWeatherModel;
+    bool isRequestAllowed = _allowRequest();
 
-      final List<dynamic>? weeklyWeatherData =
-          await WeatherService.getWeeklyWeatherByCoords(
-              // coords["lat"]!, coords["lon"]!);
-              dailyWeatherData.lat!,
-              dailyWeatherData.lon!);
-      if (weeklyWeatherData == null) {
-        Util.showSnackBar(context, "No weekly data found for $city");
-        return;
-      }
+    switch (type) {
+      case WeatherData.home:
+      case WeatherData.city:
+        if (type == WeatherData.home ? true : isRequestAllowed) {
+          dailyWeatherModel = await WeatherService.getWeatherByCity(param ?? "");
+          weeklyWeatherModel = await WeatherService.getWeeklyWeatherByCoords(
+              dailyWeatherModel?.lat,
+              dailyWeatherModel?.lon);
+        } else {
+          Util.showSnackBar(
+              context, "Please wait $_allowRequestIn seconds between requests");
+        }
+        break;
+      case WeatherData.location:
+        if (!_locationPermission) break;
+        Position pos = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+        dailyWeatherModel = await WeatherService.getWeatherByCoords(pos.latitude, pos.longitude);
+        weeklyWeatherModel = await WeatherService.getWeeklyWeatherByCoords(
+            dailyWeatherModel?.lat,
+            dailyWeatherModel?.lon);
+        break;
+    }
 
+    if (dailyWeatherModel == null) {
+      () => Util.showSnackBar(context, "No data found for $param");
+    } else {
       setState(() {
-        _weatherModel = dailyWeatherData;
-        // _weeklyWeather = _parseWeekData(weeklyWeatherData);
-        _weeklyWeather = weeklyWeatherData
-            .map((e) => WeeklyWeatherModel.fromJson(e))
-            .toList();
-        _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
+        _dailyWeatherModel = dailyWeatherModel;
+        _weeklyWeatherModel = weeklyWeatherModel;
+        _parsedWeeklyWeatherModel = _parseWeekData(weeklyWeatherModel);
       });
       widget.addPreviousSearch(
-        // {"daily": _weatherModel, "weekly": _weeklyWeather});
-        {"daily": _weatherModel, "weekly": _parsedWeeklyWeather},
+        {"daily": _dailyWeatherModel, "weekly": _parsedWeeklyWeatherModel},
       );
       _switchPage(1);
-    } else {
-      Util.showSnackBar(
-          context, "Please wait $_allowRequestIn seconds between requests");
     }
   }
 
-  void _getHometownWeather(String home) async {
-    DailyWeatherModel? dailyWeatherModel =
-        await WeatherService.getWeatherByCity(home);
-    if (dailyWeatherModel == null) return;
+  // void _getData(String city) async {
+  //   bool res = _allowRequest();
+  //   if (res) {
+  //     final dailyWeatherData = await WeatherService.getWeatherByCity(city);
+  //     if (dailyWeatherData == null) {
+  //       Util.showSnackBar(context, "No data found for $city");
+  //       return;
+  //     }
+  //
+  //     final List<dynamic>? weeklyWeatherData =
+  //         await WeatherService.getWeeklyWeatherByCoords(
+  //             // coords["lat"]!, coords["lon"]!);
+  //             dailyWeatherData.lat!,
+  //             dailyWeatherData.lon!);
+  //     if (weeklyWeatherData == null) {
+  //       Util.showSnackBar(context, "No weekly data found for $city");
+  //       return;
+  //     }
+  //
+  //     setState(() {
+  //       _dailyWeatherModel = dailyWeatherData;
+  //       // _weeklyWeatherModel = _parseWeekData(weeklyWeatherData);
+  //       _weeklyWeatherModel = weeklyWeatherData
+  //           .map((e) => WeeklyWeatherModel.fromJson(e))
+  //           .toList();
+  //       _parsedWeeklyWeatherModel = _parseWeekData(weeklyWeatherData);
+  //     });
+  //     widget.addPreviousSearch(
+  //       // {"daily": _dailyWeatherModel, "weekly": _weeklyWeatherModel});
+  //       {"daily": _dailyWeatherModel, "weekly": _parsedWeeklyWeatherModel},
+  //     );
+  //     _switchPage(1);
+  //   } else {
+  //     Util.showSnackBar(
+  //         context, "Please wait $_allowRequestIn seconds between requests");
+  //   }
+  // }
+  //
+  // void _getHometownWeather(String home) async {
+  //   DailyWeatherModel? dailyWeatherModel =
+  //       await WeatherService.getWeatherByCity(home);
+  //   if (dailyWeatherModel == null) return;
+  //
+  //   final List<dynamic>? weeklyWeatherData =
+  //       await WeatherService.getWeeklyWeatherByCoords(
+  //           dailyWeatherModel.lat!, dailyWeatherModel.lon!);
+  //   if (weeklyWeatherData == null) return;
+  //
+  //   setState(() {
+  //     _dailyWeatherModel = dailyWeatherModel;
+  //     // _weeklyWeatherModel = _parseWeekData(weeklyWeatherData);
+  //     _weeklyWeatherModel =
+  //         weeklyWeatherData.map((e) => WeeklyWeatherModel.fromJson(e)).toList();
+  //     print(_weeklyWeatherModel?.length);
+  //     _parsedWeeklyWeatherModel = _parseWeekData(weeklyWeatherData);
+  //   });
+  //   widget.addPreviousSearch(
+  //     // {"daily": _dailyWeatherModel, "weekly": _weeklyWeatherModel},
+  //     {"daily": _dailyWeatherModel, "weekly": _parsedWeeklyWeatherModel},
+  //   );
+  // }
+  //
+  // void _getCurrentPositionWeather() async {
+  //   if (!_locationPermission) return null;
+  //   Position pos = await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.high);
+  //   DailyWeatherModel? model = await WeatherService.getWeatherByCoords(pos.latitude, pos.longitude);
+  //   if (model == null) return;
+  //
+  //   final List<dynamic>? weeklyWeatherData =
+  //       await WeatherService.getWeeklyWeatherByCoords(
+  //           pos.latitude, pos.longitude);
+  //   if (weeklyWeatherData == null) return;
+  //
+  //   setState(() {
+  //     _dailyWeatherModel = model;
+  //     // _weeklyWeatherModel = _parseWeekData(weeklyWeatherData);
+  //     _weeklyWeatherModel =
+  //         weeklyWeatherData.map((e) => WeeklyWeatherModel.fromJson(e)).toList();
+  //     _parsedWeeklyWeatherModel = _parseWeekData(weeklyWeatherData);
+  //   });
+  //   widget.addPreviousSearch(
+  //     // {"daily": _dailyWeatherModel, "weekly": _weeklyWeatherModel},
+  //     {"daily": _dailyWeatherModel, "weekly": _parsedWeeklyWeatherModel},
+  //   );
+  // }
 
-    final List<dynamic>? weeklyWeatherData =
-        await WeatherService.getWeeklyWeatherByCoords(
-            dailyWeatherModel.lat!, dailyWeatherModel.lon!);
-    if (weeklyWeatherData == null) return;
-
-    setState(() {
-      _weatherModel = dailyWeatherModel;
-      // _weeklyWeather = _parseWeekData(weeklyWeatherData);
-      _weeklyWeather =
-          weeklyWeatherData.map((e) => WeeklyWeatherModel.fromJson(e)).toList();
-      print(_weeklyWeather?.length);
-      _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
-    });
-    widget.addPreviousSearch(
-      // {"daily": _weatherModel, "weekly": _weeklyWeather},
-      {"daily": _weatherModel, "weekly": _parsedWeeklyWeather},
-    );
-  }
-
-  void _getCurrentPositionWeather() async {
-    if (!_locationPermission) return null;
-    Position pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    DailyWeatherModel? model = await WeatherService.getWeatherByCoords(pos);
-    if (model == null) return;
-
-    final List<dynamic>? weeklyWeatherData =
-        await WeatherService.getWeeklyWeatherByCoords(
-            pos.latitude, pos.longitude);
-    if (weeklyWeatherData == null) return;
-
-    setState(() {
-      _weatherModel = model;
-      // _weeklyWeather = _parseWeekData(weeklyWeatherData);
-      _weeklyWeather =
-          weeklyWeatherData.map((e) => WeeklyWeatherModel.fromJson(e)).toList();
-      _parsedWeeklyWeather = _parseWeekData(weeklyWeatherData);
-    });
-    widget.addPreviousSearch(
-      // {"daily": _weatherModel, "weekly": _weeklyWeather},
-      {"daily": _weatherModel, "weekly": _parsedWeeklyWeather},
-    );
-  }
-
-  List<WeeklyWeatherModel>? _parseWeekData(List<dynamic> data) {
+  List<WeeklyWeatherModel>? _parseWeekData(List<WeeklyWeatherModel>? data) {
+    if (data == null) return null;
     int daysAdded = 0;
     try {
       List<WeeklyWeatherModel> parsedDates = [];
 
       for (final obj in data) {
-        DateTime dt = DateTime.parse(obj["dt_txt"]);
-        if (dt.hour == 12 && dt.day != DateTime.now().day) {
+        if (obj.dt?.hour == 12 && obj.dt?.day != DateTime.now().day) {
           daysAdded++;
-          WeeklyWeatherModel.createWeeklyWeatherModel(obj)
-              .then((value) => parsedDates.add(value!));
+          parsedDates.add(obj);
         }
       }
       if (daysAdded < 5) {
-        WeeklyWeatherModel.createWeeklyWeatherModel(data.last)
-            .then((value) => parsedDates.add(value!));
+        parsedDates.add(data.last);
       }
       return parsedDates;
     } catch (e, stacktrace) {
@@ -362,6 +405,30 @@ class _WeatherState extends State<Weather>
       return null;
     }
   }
+
+  // List<WeeklyWeatherModel>? _parseWeekData(List<dynamic> data) {
+  //   int daysAdded = 0;
+  //   try {
+  //     List<WeeklyWeatherModel> parsedDates = [];
+  //
+  //     for (final obj in data) {
+  //       DateTime dt = DateTime.parse(obj["dt_txt"]);
+  //       if (dt.hour == 12 && dt.day != DateTime.now().day) {
+  //         daysAdded++;
+  //         WeeklyWeatherModel.createWeeklyWeatherModel(obj)
+  //             .then((value) => parsedDates.add(value!));
+  //       }
+  //     }
+  //     if (daysAdded < 5) {
+  //       WeeklyWeatherModel.createWeeklyWeatherModel(data.last)
+  //           .then((value) => parsedDates.add(value!));
+  //     }
+  //     return parsedDates;
+  //   } catch (e, stacktrace) {
+  //     print("$e, $stacktrace");
+  //     return null;
+  //   }
+  // }
 
   Widget get _loadingWeatherData {
     return Center(
@@ -443,21 +510,22 @@ class _WeatherState extends State<Weather>
     super.build(context);
     print("rebuilding daily weather");
 
-    // return !_locationPermission && _weatherModel == null
+    // return !_locationPermission && _dailyWeatherModel == null
     return PageView(
       scrollDirection: Axis.vertical,
       controller: _pageController,
       children: [
         SearchLocationWeather(
-          getData: _getData,
+          // getData: _getData,
+          searchCallback: _getWeatherData,
           cityGestureHandler: _cityGestureHandler,
           favoriteCities: _favoriteCities,
         ),
-        _weatherModel == null && !_locationPermission
+        _dailyWeatherModel == null && !_locationPermission
             ? const Center(
                 child: Text("Enable location in settings or set your hometown"),
               )
-            : _weatherModel == null && _locationPermission
+            : _dailyWeatherModel == null && _locationPermission
                 ? _loadingWeatherData
                 : Column(
                     children: [
@@ -471,28 +539,29 @@ class _WeatherState extends State<Weather>
                                       _listScrollController.position.pixels ==
                                           -1) {
                                     _pageController.previousPage(
-                                        duration: Duration(milliseconds: 300),
+                                        duration:
+                                            const Duration(milliseconds: 300),
                                         curve: Curves.ease);
                                   }
                                   return false;
                                 },
                                 child: ListView.builder(
                                   controller: _listScrollController,
-                                  physics: BouncingScrollPhysics(),
-                                  itemCount: _weeklyWeather?.length,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemCount: _weeklyWeatherModel?.length,
                                   itemBuilder: (context, index) {
                                     String date = DateFormat("d.M")
-                                        .format(_weeklyWeather![index].dt!);
+                                        .format(_weeklyWeatherModel![index].dt!);
                                     String time = DateFormat("HH:mm")
-                                        .format(_weeklyWeather![index].dt!);
+                                        .format(_weeklyWeatherModel![index].dt!);
                                     String day = DateFormat("EEEE")
-                                        .format(_weeklyWeather![index].dt!);
+                                        .format(_weeklyWeatherModel![index].dt!);
 
                                     return Card(
                                       child: ListTile(
                                         title: Text("$date, $time"),
                                         subtitle: Text(day),
-                                        // "${_weeklyWeather?[index].dt_txt}"),
+                                        // "${_weeklyWeatherModel?[index].dt_txt}"),
                                       ),
                                     );
                                   },
@@ -511,18 +580,22 @@ class _WeatherState extends State<Weather>
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          IconButton(
+                                          const IconButton(
                                             onPressed: null,
                                             icon: Icon(
-                                              _favoriteCities
-                                                      .where((element) =>
-                                                          element.name ==
-                                                              _weatherModel!
-                                                                  .currentCity &&
-                                                          element.home)
-                                                      .isEmpty
-                                                  ? null
-                                                  : Icons.home,
+                                              // _favoriteCities
+                                              //         .where((element) => element
+                                              //                         .name ==
+                                              //                     _dailyWeatherModel!
+                                              //                         .currentCity &&
+                                              //                 element.home ==
+                                              //                     null
+                                              //             ? false
+                                              //             : element.home!)
+                                              //         .isEmpty
+                                              //     ? null
+                                              //     : Icons.home,
+                                              null,
                                               color: Colors.green,
                                               size: 30,
                                             ),
@@ -541,9 +614,9 @@ class _WeatherState extends State<Weather>
                                             child: GestureDetector(
                                               onTap: _cityGestureHandler,
                                               child: Text(
-                                                _weatherModel!.currentCity,
+                                                _dailyWeatherModel!.currentCity,
                                                 style: TextStyle(
-                                                    fontSize: _weatherModel!
+                                                    fontSize: _dailyWeatherModel!
                                                                 .currentCity
                                                                 .characters
                                                                 .length <=
@@ -557,16 +630,16 @@ class _WeatherState extends State<Weather>
                                           ),
                                           IconButton(
                                             onPressed: () => _isInFavorites(
-                                                    _weatherModel!.currentCity)
+                                                    _dailyWeatherModel!.currentCity)
                                                 ? _removeFromFavorites(
-                                                    _weatherModel!.currentCity)
+                                                    _dailyWeatherModel!.currentCity)
                                                 : _addToFavorites(
-                                                    _weatherModel!.currentCity),
+                                                    _dailyWeatherModel!.currentCity),
                                             icon: Icon(
                                               _favoriteCities
                                                       .where((element) =>
                                                           element.name ==
-                                                          _weatherModel!
+                                                          _dailyWeatherModel!
                                                               .currentCity)
                                                       .isEmpty
                                                   ? Icons.star_outline
@@ -576,7 +649,7 @@ class _WeatherState extends State<Weather>
                                             color: _favoriteCities
                                                     .where((element) =>
                                                         element.name ==
-                                                        _weatherModel!
+                                                        _dailyWeatherModel!
                                                             .currentCity)
                                                     .isEmpty
                                                 ? Colors.grey
@@ -598,22 +671,22 @@ class _WeatherState extends State<Weather>
                                   Column(
                                     children: [
                                       WeatherTemperature(
-                                        temp: _weatherModel!.temp!,
+                                        temp: _dailyWeatherModel!.temp!,
                                         tempFeelsLike:
-                                            _weatherModel!.tempFeelsLike!,
-                                        tempMin: _weatherModel!.tempMin!,
-                                        tempMax: _weatherModel!.tempMax!,
+                                            _dailyWeatherModel!.tempFeelsLike!,
+                                        tempMin: _dailyWeatherModel!.tempMin!,
+                                        tempMax: _dailyWeatherModel!.tempMax!,
                                       ),
                                       WeatherInfoCard(
-                                        iconUrl: _weatherModel!.iconUrl!,
-                                        weatherTypeDescription: _weatherModel!
+                                        iconUrl: _dailyWeatherModel!.iconUrl!,
+                                        weatherTypeDescription: _dailyWeatherModel!
                                             .weatherTypeDescription!,
-                                        visibility: _weatherModel!.visibility!,
-                                        humidity: _weatherModel!.humidity!,
-                                        pressure: _weatherModel!.pressure!,
-                                        windDeg: _weatherModel!.windDeg!,
+                                        visibility: _dailyWeatherModel!.visibility!,
+                                        humidity: _dailyWeatherModel!.humidity!,
+                                        pressure: _dailyWeatherModel!.pressure!,
+                                        windDeg: _dailyWeatherModel!.windDeg!,
                                       ),
-                                      SunTimes(weatherModel: _weatherModel!),
+                                      SunTimes(weatherModel: _dailyWeatherModel!),
                                     ],
                                   ),
                                 ],
@@ -621,13 +694,13 @@ class _WeatherState extends State<Weather>
                             ),
                       _doubleButton,
                       Expanded(
-                        child: _weeklyWeather == null
+                        child: _weeklyWeatherModel == null
                             ? Center(
                                 child: _loadingWeatherData,
                               )
                             : WeeklyWeatherShowcase(
-                                // weeklyWeather: _weeklyWeather!,
-                                weeklyWeather: _parsedWeeklyWeather!,
+                                // weeklyWeather: _weeklyWeatherModel!,
+                                weeklyWeather: _parsedWeeklyWeatherModel!,
                               ),
                       ),
                     ],
@@ -639,7 +712,7 @@ class _WeatherState extends State<Weather>
     // cityGestureHandler: _cityGestureHandler,
     // favoriteCities: _favoriteCities,
     // )
-    //     : _weatherModel == null
+    //     : _dailyWeatherModel == null
     // ? _loadingWeatherData
     //     : Column(
     // children: [
@@ -659,7 +732,7 @@ class _WeatherState extends State<Weather>
     // _favoriteCities
     //     .where((element) =>
     // element.name ==
-    // _weatherModel!
+    // _dailyWeatherModel!
     //     .currentCity &&
     // element.home)
     //     .isEmpty
@@ -681,9 +754,9 @@ class _WeatherState extends State<Weather>
     // child: GestureDetector(
     // onTap: _cityGestureHandler,
     // child: Text(
-    // _weatherModel!.currentCity,
+    // _dailyWeatherModel!.currentCity,
     // style: TextStyle(
-    // fontSize: _weatherModel!.currentCity
+    // fontSize: _dailyWeatherModel!.currentCity
     //     .characters.length <=
     // 15
     // ? 35
@@ -694,12 +767,12 @@ class _WeatherState extends State<Weather>
     // ),
     // IconButton(
     // onPressed: () => _addToFavorites(
-    // _weatherModel!.currentCity),
+    // _dailyWeatherModel!.currentCity),
     // icon: Icon(
     // _favoriteCities
     //     .where((element) =>
     // element.name ==
-    // _weatherModel!.currentCity)
+    // _dailyWeatherModel!.currentCity)
     //     .isEmpty
     // ? Icons.star_outline
     //     : Icons.star,
@@ -708,7 +781,7 @@ class _WeatherState extends State<Weather>
     // color: _favoriteCities
     //     .where((element) =>
     // element.name ==
-    // _weatherModel!.currentCity)
+    // _dailyWeatherModel!.currentCity)
     //     .isEmpty
     // ? Colors.grey
     //     : Colors.yellow,
@@ -727,33 +800,33 @@ class _WeatherState extends State<Weather>
     // Column(
     // children: [
     // WeatherTemperature(
-    // temp: _weatherModel!.temp!,
-    // tempFeelsLike: _weatherModel!.tempFeelsLike!,
-    // tempMin: _weatherModel!.tempMin!,
-    // tempMax: _weatherModel!.tempMax!,
+    // temp: _dailyWeatherModel!.temp!,
+    // tempFeelsLike: _dailyWeatherModel!.tempFeelsLike!,
+    // tempMin: _dailyWeatherModel!.tempMin!,
+    // tempMax: _dailyWeatherModel!.tempMax!,
     // ),
     // WeatherInfoCard(
-    // iconUrl: _weatherModel!.iconUrl!,
+    // iconUrl: _dailyWeatherModel!.iconUrl!,
     // weatherTypeDescription:
-    // _weatherModel!.weatherTypeDescription!,
-    // visibility: _weatherModel!.visibility!,
-    // humidity: _weatherModel!.humidity!,
-    // pressure: _weatherModel!.pressure!,
-    // windDeg: _weatherModel!.windDeg!,
+    // _dailyWeatherModel!.weatherTypeDescription!,
+    // visibility: _dailyWeatherModel!.visibility!,
+    // humidity: _dailyWeatherModel!.humidity!,
+    // pressure: _dailyWeatherModel!.pressure!,
+    // windDeg: _dailyWeatherModel!.windDeg!,
     // ),
-    // SunTimes(weatherModel: _weatherModel!),
+    // SunTimes(weatherModel: _dailyWeatherModel!),
     // ],
     // ),
     // ],
     // ),
     // ),
     // Expanded(
-    // child: _weeklyWeather == null
+    // child: _weeklyWeatherModel == null
     // ? Center(
     // child: _loadingWeatherData,
     // )
     //     : WeeklyWeatherShowcase(
-    // weeklyWeather: _weeklyWeather!,
+    // weeklyWeather: _weeklyWeatherModel!,
     // ),
     // ),
     // ],

@@ -1,18 +1,21 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:weather_app/screens/weather_screen.dart';
 import 'package:weather_app/util.dart';
 
 import '../models/favorite_city_model.dart';
 
 class SearchLocationWeather extends StatefulWidget {
-  final Function getData;
+  // final Function getData;
+  final Function searchCallback;
   final Function cityGestureHandler;
   final List<FavoriteCityModel> favoriteCities;
 
   const SearchLocationWeather({
     Key? key,
-    required this.getData,
+    // required this.getData,
+    required this.searchCallback,
     required this.cityGestureHandler,
     required this.favoriteCities,
   }) : super(key: key);
@@ -22,7 +25,7 @@ class SearchLocationWeather extends StatefulWidget {
 }
 
 class _SearchLocationWeatherState extends State<SearchLocationWeather> {
-  late final Function _getData = widget.getData;
+  late final Function _searchCallback = widget.searchCallback;
   late final Function _cityGestureHandler = widget.cityGestureHandler;
   late List<FavoriteCityModel> _favoriteCities = widget.favoriteCities;
 
@@ -38,7 +41,8 @@ class _SearchLocationWeatherState extends State<SearchLocationWeather> {
         if (value != null) {
           List<dynamic> jsonList = jsonDecode(value) as List<dynamic>;
           setState(() => _favoriteCities = jsonList
-              .map((e) => FavoriteCityModel.createFavoriteCity(e))
+              // .map((e) => FavoriteCityModel.createFavoriteCity(e))
+              .map((e) => FavoriteCityModel.fromJson(e))
               .toList());
         } else {
           setState(() {
@@ -56,8 +60,8 @@ class _SearchLocationWeatherState extends State<SearchLocationWeather> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 30.0),
-          child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 30.0),
+          child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.9,
             child: Image.asset("assets/images/cloud_colored4.png"),
           ),
@@ -108,13 +112,13 @@ class _SearchLocationWeatherState extends State<SearchLocationWeather> {
                               return ListTile(
                                 // shape: Border(bottom: BorderSide(color: Colors.black, width: 1.0),),
                                 title: Text(
-                                  _favoriteCities[index].name,
+                                  _favoriteCities[index].name ?? "",
                                   style: const TextStyle(fontSize: 18),
                                 ),
                                 // subtitle: Text(_favoriteCities[index].home.toString()),
                                 trailing: const Icon(Icons.search),
                                 onTap: () =>
-                                    _getData(_favoriteCities[index].name),
+                                    _searchCallback(WeatherData.city, _favoriteCities[index].name),
                               );
                             },
                           ),
