@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 
 import '../util.dart';
 
@@ -23,11 +24,7 @@ import '../widgets/weather_info_card.dart';
 import '../widgets/weather_temps.dart';
 import '../widgets/weekly_weather_showcase.dart';
 
-enum WeatherData {
-  home,
-  city,
-  location
-}
+enum WeatherData { home, city, location }
 
 class Weather extends StatefulWidget {
   final bool locationPermission;
@@ -45,14 +42,14 @@ class Weather extends StatefulWidget {
 
 class _WeatherState extends State<Weather>
     with AutomaticKeepAliveClientMixin<Weather> {
-
   final TextEditingController _textFieldController = TextEditingController();
   final ScrollController _listScrollController = ScrollController();
   final PageController _pageController = PageController(initialPage: 0);
 
-  DailyWeatherModel? _dailyWeatherModel;
-  List<WeeklyWeatherModel>? _weeklyWeatherModel;
-  List<WeeklyWeatherModel>? _parsedWeeklyWeatherModel;
+  CombinedWeatherModel? _combinedWeatherModel;
+  // DailyWeatherModel? _dailyWeatherModel;
+  // List<WeeklyWeatherModel>? _weeklyWeatherModel;
+  // List<WeeklyWeatherModel>? _parsedWeeklyWeatherModel;
   List<FavoriteCityModel> _favoriteCities = [];
 
   late final bool _locationPermission = widget.locationPermission;
@@ -171,7 +168,8 @@ class _WeatherState extends State<Weather>
                 onPressed: () {
                   setState(() {
                     // _getData(_textFieldController.text);
-                    _getWeatherData(WeatherData.city, _textFieldController.text);
+                    _getWeatherData(
+                        WeatherData.city, _textFieldController.text);
                     Navigator.pop(context);
                   });
                   _textFieldController.clear();
@@ -223,7 +221,8 @@ class _WeatherState extends State<Weather>
       if (!contains) {
         // final favCity = FavoriteCityModel.createFavoriteCity(
         final favCity = FavoriteCityModel.fromJson(
-            {"name": _dailyWeatherModel?.currentCity, "home": false});
+            // {"name": _dailyWeatherModel?.currentCity, "home": false});
+            {"name": _combinedWeatherModel?.dailyWeatherModel?.currentCity, "home": false});
         setState(() => _favoriteCities.add(favCity));
       }
       Util.saveToPrefs("favoriteCities", _favoriteCities);
@@ -262,10 +261,10 @@ class _WeatherState extends State<Weather>
       case WeatherData.home:
       case WeatherData.city:
         if (type == WeatherData.home ? true : isRequestAllowed) {
-          dailyWeatherModel = await WeatherService.getWeatherByCity(param ?? "");
+          dailyWeatherModel =
+              await WeatherService.getWeatherByCity(param ?? "");
           weeklyWeatherModel = await WeatherService.getWeeklyWeatherByCoords(
-              dailyWeatherModel?.lat,
-              dailyWeatherModel?.lon);
+              dailyWeatherModel?.lat, dailyWeatherModel?.lon);
         } else {
           Util.showSnackBar(
               context, "Please wait $_allowRequestIn seconds between requests");
@@ -275,10 +274,10 @@ class _WeatherState extends State<Weather>
         if (!_locationPermission) break;
         Position pos = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);
-        dailyWeatherModel = await WeatherService.getWeatherByCoords(pos.latitude, pos.longitude);
+        dailyWeatherModel = await WeatherService.getWeatherByCoords(
+            pos.latitude, pos.longitude);
         weeklyWeatherModel = await WeatherService.getWeeklyWeatherByCoords(
-            dailyWeatherModel?.lat,
-            dailyWeatherModel?.lon);
+            dailyWeatherModel?.lat, dailyWeatherModel?.lon);
         break;
     }
 
@@ -286,12 +285,18 @@ class _WeatherState extends State<Weather>
       () => Util.showSnackBar(context, "No data found for $param");
     } else {
       setState(() {
-        _dailyWeatherModel = dailyWeatherModel;
-        _weeklyWeatherModel = weeklyWeatherModel;
-        _parsedWeeklyWeatherModel = _parseWeekData(weeklyWeatherModel);
+        // _dailyWeatherModel = dailyWeatherModel;
+        // _weeklyWeatherModel = weeklyWeatherModel;
+        // _parsedWeeklyWeatherModel = _parseWeekData(weeklyWeatherModel);
+        _combinedWeatherModel = CombinedWeatherModel(
+            dailyWeatherModel: dailyWeatherModel,
+            weeklyWeatherModel: weeklyWeatherModel,
+            parsedWeeklyWeatherModel: _parseWeekData(weeklyWeatherModel),
+        );
       });
       widget.addPreviousSearch(
-        {"daily": _dailyWeatherModel, "weekly": _parsedWeeklyWeatherModel},
+        // {"daily": _dailyWeatherModel, "weekly": _parsedWeeklyWeatherModel},
+        _combinedWeatherModel
       );
       _switchPage(1);
     }
@@ -521,11 +526,13 @@ class _WeatherState extends State<Weather>
           cityGestureHandler: _cityGestureHandler,
           favoriteCities: _favoriteCities,
         ),
-        _dailyWeatherModel == null && !_locationPermission
+        // _dailyWeatherModel == null && !_locationPermission
+        _combinedWeatherModel?.dailyWeatherModel == null && !_locationPermission
             ? const Center(
                 child: Text("Enable location in settings or set your hometown"),
               )
-            : _dailyWeatherModel == null && _locationPermission
+            // : _dailyWeatherModel == null && _locationPermission
+            : _combinedWeatherModel?.dailyWeatherModel == null && _locationPermission
                 ? _loadingWeatherData
                 : Column(
                     children: [
@@ -548,14 +555,18 @@ class _WeatherState extends State<Weather>
                                 child: ListView.builder(
                                   controller: _listScrollController,
                                   physics: const BouncingScrollPhysics(),
-                                  itemCount: _weeklyWeatherModel?.length,
+                                  // itemCount: _weeklyWeatherModel?.length,
+                                  itemCount: _combinedWeatherModel?.weeklyWeatherModel?.length,
                                   itemBuilder: (context, index) {
-                                    String date = DateFormat("d.M")
-                                        .format(_weeklyWeatherModel![index].dt!);
-                                    String time = DateFormat("HH:mm")
-                                        .format(_weeklyWeatherModel![index].dt!);
-                                    String day = DateFormat("EEEE")
-                                        .format(_weeklyWeatherModel![index].dt!);
+                                    String date = DateFormat("d.M").format(
+                                        // _weeklyWeatherModel![index].dt!);
+                                        _combinedWeatherModel!.weeklyWeatherModel![index].dt!);
+                                    String time = DateFormat("HH:mm").format(
+                                        // _weeklyWeatherModel![index].dt!);
+                                        _combinedWeatherModel!.weeklyWeatherModel![index].dt!);
+                                    String day = DateFormat("EEEE").format(
+                                        // _weeklyWeatherModel![index].dt!);
+                                        _combinedWeatherModel!.weeklyWeatherModel![index].dt!);
 
                                     return Card(
                                       child: ListTile(
@@ -614,15 +625,18 @@ class _WeatherState extends State<Weather>
                                             child: GestureDetector(
                                               onTap: _cityGestureHandler,
                                               child: Text(
-                                                _dailyWeatherModel!.currentCity,
+                                                // _dailyWeatherModel!.currentCity,
+                                                _combinedWeatherModel!.dailyWeatherModel!.currentCity,
                                                 style: TextStyle(
-                                                    fontSize: _dailyWeatherModel!
-                                                                .currentCity
-                                                                .characters
-                                                                .length <=
-                                                            15
-                                                        ? 35
-                                                        : 30,
+                                                    fontSize:
+                                                        // _dailyWeatherModel!
+                                                    _combinedWeatherModel!.dailyWeatherModel!
+                                                                    .currentCity
+                                                                    .characters
+                                                                    .length <=
+                                                                15
+                                                            ? 35
+                                                            : 30,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
@@ -630,16 +644,23 @@ class _WeatherState extends State<Weather>
                                           ),
                                           IconButton(
                                             onPressed: () => _isInFavorites(
-                                                    _dailyWeatherModel!.currentCity)
+                                                    // _dailyWeatherModel!
+                                                _combinedWeatherModel?.dailyWeatherModel!
+                                                        .currentCity)
                                                 ? _removeFromFavorites(
-                                                    _dailyWeatherModel!.currentCity)
+                                                    // _dailyWeatherModel!
+                                                _combinedWeatherModel?.dailyWeatherModel!
+                                                        .currentCity)
                                                 : _addToFavorites(
-                                                    _dailyWeatherModel!.currentCity),
+                                                    // _dailyWeatherModel!
+                                                _combinedWeatherModel?.dailyWeatherModel!
+                                                        .currentCity),
                                             icon: Icon(
                                               _favoriteCities
                                                       .where((element) =>
                                                           element.name ==
-                                                          _dailyWeatherModel!
+                                                          // _dailyWeatherModel!
+                                                              _combinedWeatherModel?.dailyWeatherModel!
                                                               .currentCity)
                                                       .isEmpty
                                                   ? Icons.star_outline
@@ -649,7 +670,8 @@ class _WeatherState extends State<Weather>
                                             color: _favoriteCities
                                                     .where((element) =>
                                                         element.name ==
-                                                        _dailyWeatherModel!
+                                                        // _dailyWeatherModel!
+                                                        _combinedWeatherModel?.dailyWeatherModel!
                                                             .currentCity)
                                                     .isEmpty
                                                 ? Colors.grey
@@ -671,22 +693,29 @@ class _WeatherState extends State<Weather>
                                   Column(
                                     children: [
                                       WeatherTemperature(
-                                        temp: _dailyWeatherModel!.temp!,
+                                        // combinedWeatherModel: _combinedWeatherModel!,
+                                        temp: _combinedWeatherModel!.dailyWeatherModel!.temp!,
                                         tempFeelsLike:
-                                            _dailyWeatherModel!.tempFeelsLike!,
-                                        tempMin: _dailyWeatherModel!.tempMin!,
-                                        tempMax: _dailyWeatherModel!.tempMax!,
+                                        _combinedWeatherModel!.dailyWeatherModel!.tempFeelsLike!,
+                                        tempMin: _combinedWeatherModel!.dailyWeatherModel!.tempMin!,
+                                        tempMax: _combinedWeatherModel!.dailyWeatherModel!.tempMax!,
                                       ),
                                       WeatherInfoCard(
-                                        iconUrl: _dailyWeatherModel!.iconUrl!,
-                                        weatherTypeDescription: _dailyWeatherModel!
-                                            .weatherTypeDescription!,
-                                        visibility: _dailyWeatherModel!.visibility!,
-                                        humidity: _dailyWeatherModel!.humidity!,
-                                        pressure: _dailyWeatherModel!.pressure!,
-                                        windDeg: _dailyWeatherModel!.windDeg!,
+                                        // combinedWeatherModel: _combinedWeatherModel!,
+                                        iconUrl: _combinedWeatherModel!.dailyWeatherModel!.iconUrl!,
+                                        weatherTypeDescription:
+                                        _combinedWeatherModel!.dailyWeatherModel!
+                                                .weatherTypeDescription!,
+                                        visibility:
+                                        _combinedWeatherModel!.dailyWeatherModel!.visibility!,
+                                        humidity: _combinedWeatherModel!.dailyWeatherModel!.humidity!,
+                                        pressure: _combinedWeatherModel!.dailyWeatherModel!.pressure!,
+                                        windDeg: _combinedWeatherModel!.dailyWeatherModel!.windDeg!,
                                       ),
-                                      SunTimes(weatherModel: _dailyWeatherModel!),
+                                      SunTimes(
+                                        // combinedWeatherModel: _combinedWeatherModel!,
+                                          weatherModel: _combinedWeatherModel!.dailyWeatherModel!,
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -694,13 +723,14 @@ class _WeatherState extends State<Weather>
                             ),
                       _doubleButton,
                       Expanded(
-                        child: _weeklyWeatherModel == null
+                        child: _combinedWeatherModel?.parsedWeeklyWeatherModel == null
                             ? Center(
                                 child: _loadingWeatherData,
                               )
                             : WeeklyWeatherShowcase(
                                 // weeklyWeather: _weeklyWeatherModel!,
-                                weeklyWeather: _parsedWeeklyWeatherModel!,
+                                // weeklyWeather: _parsedWeeklyWeatherModel!,
+                                combinedWeatherModel: _combinedWeatherModel!,
                               ),
                       ),
                     ],

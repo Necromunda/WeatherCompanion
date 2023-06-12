@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 
 import '../models/daily_weather_model.dart';
 
@@ -21,9 +22,11 @@ class _PageContainerState extends State<PageContainer> {
   late final bool _locationPermission = widget.locationPermission;
   int _selectedIndex = 1;
   final PageController _pageController = PageController(initialPage: 1);
-  List<Map<String, dynamic>> _previousSearches = [];
+  // List<Map<String, dynamic>> _previousSearches = [];
+  List<CombinedWeatherModel> _previousSearches = [];
 
-  void _addPreviousSearch(Map<String, dynamic> previousSearch) {
+  // void _addPreviousSearch(Map<String, dynamic> previousSearch) {
+  void _addPreviousSearch(CombinedWeatherModel previousSearch) {
     setState(() {
       _previousSearches.add(previousSearch);
     });

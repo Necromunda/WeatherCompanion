@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 
 class WeatherInfoCard extends StatefulWidget {
   final String iconUrl, weatherTypeDescription;
   final double visibility, humidity, pressure, windDeg;
+  // final CombinedWeatherModel combinedWeatherModel;
 
   const WeatherInfoCard({
     Key? key,
+    // required this.combinedWeatherModel,
     required this.iconUrl,
     required this.weatherTypeDescription,
     required this.visibility,
@@ -20,6 +23,13 @@ class WeatherInfoCard extends StatefulWidget {
 }
 
 class _WeatherInfoCardState extends State<WeatherInfoCard> {
+  // late final CombinedWeatherModel _combinedWeatherModel = widget.combinedWeatherModel;
+  // late final String _iconUrl = _combinedWeatherModel.dailyWeatherModel!.iconUrl!,
+  //     _weatherTypeDescription = _combinedWeatherModel.dailyWeatherModel!.weatherTypeDescription!;
+  // late final double _visibility = _combinedWeatherModel.dailyWeatherModel!.visibility!,
+  //     _humidity = _combinedWeatherModel.dailyWeatherModel!.humidity!,
+  //     _pressure = _combinedWeatherModel.dailyWeatherModel!.pressure!,
+  //     _windDeg = _combinedWeatherModel.dailyWeatherModel!.windDeg!;
   late final String _iconUrl = widget.iconUrl,
       _weatherTypeDescription = widget.weatherTypeDescription;
   late final double _visibility = widget.visibility,

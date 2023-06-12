@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 
 import '../screens/weekly_weather_screen.dart';
 
 import '../models/weekly_weather_model.dart';
 
 class WeeklyWeatherShowcase extends StatelessWidget {
-  final List<WeeklyWeatherModel> weeklyWeather;
+  // final List<WeeklyWeatherModel> weeklyWeather;
+  final CombinedWeatherModel combinedWeatherModel;
 
-  const WeeklyWeatherShowcase({Key? key, required this.weeklyWeather})
+  // const WeeklyWeatherShowcase({Key? key, required this.weeklyWeather})
+  const WeeklyWeatherShowcase({Key? key, required this.combinedWeatherModel})
       : super(key: key);
 
   @override
@@ -19,7 +22,8 @@ class WeeklyWeatherShowcase extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          ...weeklyWeather.map(
+          // ...weeklyWeather.map(
+          ...combinedWeatherModel.parsedWeeklyWeatherModel!.map(
             (model) {
               return GestureDetector(
                 onTap: () => Navigator.push(
@@ -27,6 +31,7 @@ class WeeklyWeatherShowcase extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) =>
                         WeeklyWeatherScreen(weeklyWeatherModel: model),
+                        // WeeklyWeatherScreen(combinedWeatherModel: combinedWeatherModel),
                   ),
                 ),
                 child: Column(

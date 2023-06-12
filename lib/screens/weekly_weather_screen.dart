@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 
 import '../widgets/weekly_weather.dart';
 
@@ -7,8 +8,11 @@ import '../models/weekly_weather_model.dart';
 
 class WeeklyWeatherScreen extends StatelessWidget {
   final WeeklyWeatherModel weeklyWeatherModel;
+  // final CombinedWeatherModel combinedWeatherModel;
+  // final int index;
 
   const WeeklyWeatherScreen({Key? key, required this.weeklyWeatherModel}) : super(key: key);
+  // const WeeklyWeatherScreen({Key? key, required this.combinedWeatherModel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +32,7 @@ class WeeklyWeatherScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: WeeklyWeather(weeklyWeatherModel: weeklyWeatherModel),
+      // body: WeeklyWeather(combinedWeatherModel: combinedWeatherModel,),
     );
   }
 }

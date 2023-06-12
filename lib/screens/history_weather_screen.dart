@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 import 'package:weather_app/widgets/history_weather.dart';
 
 import '../models/daily_weather_model.dart';
 
 class HistoryWeatherScreen extends StatelessWidget {
-  final Map<String, dynamic> weatherMap;
+  // final Map<String, dynamic> weatherMap;
+  final CombinedWeatherModel combinedWeatherModel;
 
-  const HistoryWeatherScreen({Key? key, required this.weatherMap})
+  // const HistoryWeatherScreen({Key? key, required this.weatherMap})
+  const HistoryWeatherScreen({Key? key, required this.combinedWeatherModel})
       : super(key: key);
 
   @override
@@ -28,8 +31,9 @@ class HistoryWeatherScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: HistoryWeather(
-        dailyWeatherModel: weatherMap["daily"],
-        weeklyWeatherModelsList: weatherMap["weekly"],
+        combinedWeatherModel: combinedWeatherModel,
+        // dailyWeatherModel: weatherMap["daily"],
+        // weeklyWeatherModelsList: weatherMap["weekly"],
       ),
     );
   }

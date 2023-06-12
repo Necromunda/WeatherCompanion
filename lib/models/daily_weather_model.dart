@@ -94,26 +94,26 @@ class DailyWeatherModel {
         ? null
         : DateTime.fromMillisecondsSinceEpoch((json["dt"]).toInt() * 1000);
 
-    lat = double.tryParse(json["coord"]["lat"]);
-    lon = double.tryParse(json["coord"]["lon"]);
-    temp = double.tryParse(json["main"]["temp"]);
-    tempFeelsLike = double.tryParse(json["main"]["feels_like"]);
-    tempMin = double.tryParse(json["main"]["temp_min"]);
-    tempMax = double.tryParse(json["main"]["temp_max"]);
-    pressure = double.tryParse(json["main"]["pressure"]);
-    humidity = double.tryParse(json["main"]["humidity"]);
-    visibility = double.tryParse(json["visibility"]);
-    windSpeed = double.tryParse(json["wind"]["speed"]);
-    windDeg = double.tryParse(json["wind"]["deg"]);
+    lat = json["coord"]["lat"]?.toDouble();
+    lon = json["coord"]["lon"]?.toDouble();
+    temp = json["main"]["temp"]?.toDouble();
+    tempFeelsLike = json["main"]["feels_like"]?.toDouble();
+    tempMin = json["main"]["temp_min"]?.toDouble();
+    tempMax = json["main"]["temp_max"]?.toDouble();
+    pressure = json["main"]["pressure"]?.toDouble();
+    humidity = json["main"]["humidity"]?.toDouble();
+    visibility = json["visibility"]?.toDouble();
+    windSpeed = json["wind"]["speed"]?.toDouble();
+    windDeg = json["wind"]["deg"]?.toDouble();
     weatherType = json["weather"][0]["main"];
     weatherTypeDescription = json["weather"][0]["description"];
     icon = json["weather"][0]["icon"];
     countryCode = json["sys"]["country"];
-    sunrise = sunr;
-    sunset = suns;
     city = json["name"];
     iconUrl =
         "https://openweathermap.org/img/wn/${json["weather"][0]["icon"]}@2x.png";
+    sunrise = sunr;
+    sunset = suns;
     dt = time;
     isFavorite = false;
   }

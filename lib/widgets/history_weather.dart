@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/models/combined_weather_model.dart';
 import 'package:weather_app/models/daily_weather_model.dart';
 import 'package:weather_app/models/weekly_weather_model.dart';
 import 'package:weather_app/widgets/sun_times.dart';
@@ -8,13 +9,15 @@ import 'package:weather_app/widgets/weather_temps.dart';
 import 'package:weather_app/widgets/weekly_weather_showcase.dart';
 
 class HistoryWeather extends StatelessWidget {
-  final DailyWeatherModel dailyWeatherModel;
-  final List<WeeklyWeatherModel> weeklyWeatherModelsList;
+  // final DailyWeatherModel dailyWeatherModel;
+  // final List<WeeklyWeatherModel> weeklyWeatherModelsList;
+  final CombinedWeatherModel combinedWeatherModel;
 
   const HistoryWeather({
     Key? key,
-    required this.dailyWeatherModel,
-    required this.weeklyWeatherModelsList,
+    required this.combinedWeatherModel,
+    // required this.dailyWeatherModel,
+    // required this.weeklyWeatherModelsList,
   }) : super(key: key);
 
   @override
@@ -41,9 +44,10 @@ class HistoryWeather extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          dailyWeatherModel.currentCity,
+                          // dailyWeatherModel.currentCity,
+                          combinedWeatherModel.dailyWeatherModel!.currentCity,
                           style: TextStyle(
-                              fontSize: dailyWeatherModel
+                              fontSize: combinedWeatherModel.dailyWeatherModel!
                                           .currentCity.characters.length <=
                                       15
                                   ? 35
@@ -56,7 +60,7 @@ class HistoryWeather extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 15.0),
                     child: Text(
-                      DateFormat.MMMMEEEEd().format(dailyWeatherModel.dt!),
+                      DateFormat.MMMMEEEEd().format(combinedWeatherModel.dailyWeatherModel!.dt!),
                       style: const TextStyle(fontSize: 20),
                     ),
                   )
@@ -65,21 +69,24 @@ class HistoryWeather extends StatelessWidget {
               Column(
                 children: [
                   WeatherTemperature(
-                    temp: dailyWeatherModel.temp!,
-                    tempFeelsLike: dailyWeatherModel.tempFeelsLike!,
-                    tempMin: dailyWeatherModel.tempMin!,
-                    tempMax: dailyWeatherModel.tempMax!,
+                    // combinedWeatherModel: combinedWeatherModel,
+                    temp: combinedWeatherModel.dailyWeatherModel!.temp!,
+                    tempFeelsLike: combinedWeatherModel.dailyWeatherModel!.tempFeelsLike!,
+                    tempMin: combinedWeatherModel.dailyWeatherModel!.tempMin!,
+                    tempMax: combinedWeatherModel.dailyWeatherModel!.tempMax!,
                   ),
                   WeatherInfoCard(
-                    iconUrl: dailyWeatherModel.iconUrl!,
+                    // combinedWeatherModel: combinedWeatherModel,
+                    iconUrl: combinedWeatherModel.dailyWeatherModel!.iconUrl!,
                     weatherTypeDescription:
-                        dailyWeatherModel.weatherTypeDescription!,
-                    visibility: dailyWeatherModel.visibility!,
-                    humidity: dailyWeatherModel.humidity!,
-                    pressure: dailyWeatherModel.pressure!,
-                    windDeg: dailyWeatherModel.windDeg!,
+                    combinedWeatherModel.dailyWeatherModel!.weatherTypeDescription!,
+                    visibility: combinedWeatherModel.dailyWeatherModel!.visibility!,
+                    humidity: combinedWeatherModel.dailyWeatherModel!.humidity!,
+                    pressure: combinedWeatherModel.dailyWeatherModel!.pressure!,
+                    windDeg: combinedWeatherModel.dailyWeatherModel!.windDeg!,
                   ),
-                  SunTimes(weatherModel: dailyWeatherModel),
+                  SunTimes(weatherModel: combinedWeatherModel!.dailyWeatherModel!),
+                  // SunTimes(combinedWeatherModel: combinedWeatherModel),
                 ],
               ),
             ],
@@ -87,7 +94,8 @@ class HistoryWeather extends StatelessWidget {
         ),
         Expanded(
           child: WeeklyWeatherShowcase(
-            weeklyWeather: weeklyWeatherModelsList,
+            // weeklyWeather: combinedWeatherModel.parsedWeeklyWeatherModel!,
+            combinedWeatherModel: combinedWeatherModel,
           ),
         ),
       ],
