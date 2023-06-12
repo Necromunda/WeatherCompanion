@@ -16,8 +16,10 @@ class WeatherService {
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        DailyWeatherModel? model = await DailyWeatherModel.createWeatherModel(
-            jsonDecode(response.body));
+        // DailyWeatherModel? model = await DailyWeatherModel.createWeatherModel(
+        DailyWeatherModel model = DailyWeatherModel.fromJson(
+          jsonDecode(response.body),
+        );
         return model;
       } else {
         print("Error getting weather data");
@@ -37,8 +39,10 @@ class WeatherService {
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        DailyWeatherModel? model = await DailyWeatherModel.createWeatherModel(
-            jsonDecode(response.body));
+        // DailyWeatherModel? model = await DailyWeatherModel.createWeatherModel(
+        DailyWeatherModel model = DailyWeatherModel.fromJson(
+          jsonDecode(response.body),
+        );
         return model;
       } else {
         print("Error getting weather data");
@@ -100,7 +104,9 @@ class WeatherService {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final List<WeeklyWeatherModel> models = (data["list"] as List).map((e) => WeeklyWeatherModel.fromJson(e)).toList();
+        final List<WeeklyWeatherModel> models = (data["list"] as List)
+            .map((e) => WeeklyWeatherModel.fromJson(e))
+            .toList();
         return models;
       } else {
         print("Error getting weekly weather data");
