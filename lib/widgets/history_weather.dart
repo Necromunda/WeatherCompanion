@@ -84,6 +84,7 @@ class HistoryWeather extends StatelessWidget {
                     humidity: combinedWeatherModel.dailyWeatherModel!.humidity!,
                     pressure: combinedWeatherModel.dailyWeatherModel!.pressure!,
                     windDeg: combinedWeatherModel.dailyWeatherModel!.windDeg!,
+                    windSpeed: combinedWeatherModel.dailyWeatherModel!.windSpeed!,
                   ),
                   SunTimes(weatherModel: combinedWeatherModel.dailyWeatherModel!),
                   // SunTimes(combinedWeatherModel: combinedWeatherModel),

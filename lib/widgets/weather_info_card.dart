@@ -4,7 +4,8 @@ import 'package:weather_app/models/combined_weather_model.dart';
 
 class WeatherInfoCard extends StatefulWidget {
   final String iconUrl, weatherTypeDescription;
-  final double visibility, humidity, pressure, windDeg;
+  final double visibility, humidity, pressure, windDeg, windSpeed;
+
   // final CombinedWeatherModel combinedWeatherModel;
 
   const WeatherInfoCard({
@@ -16,6 +17,7 @@ class WeatherInfoCard extends StatefulWidget {
     required this.humidity,
     required this.pressure,
     required this.windDeg,
+    required this.windSpeed,
   }) : super(key: key);
 
   @override
@@ -35,7 +37,8 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
   late final double _visibility = widget.visibility,
       _humidity = widget.humidity,
       _pressure = widget.pressure,
-      _windDeg = widget.windDeg;
+      _windDeg = widget.windDeg,
+      _windSpeed = widget.windSpeed;
   late bool _flipCard = false;
   static const List<String> _directions = [
     'north',
@@ -61,8 +64,7 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
     return GestureDetector(
       onTap: _gestureDetectorHandler,
       child: Container(
-        decoration:
-            BoxDecoration(border: Border.all(color: Colors.transparent)),
+        decoration: BoxDecoration(border: Border.all(color: Colors.transparent)),
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height * 0.2,
         child: !_flipCard
@@ -82,24 +84,34 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
                     padding: const EdgeInsets.only(right: 5.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      // crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: const [
-                        Text(
-                          "Visibility",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        Text(
-                          "Air pressure",
-                          style: TextStyle(fontSize: 18),
-                        ),
+                        // Text(
+                        //   "Visibility",
+                        //   style: TextStyle(fontSize: 18),
+                        // ),
+                        Icon(Icons.visibility_outlined),
+                        // Text(
+                        //   "Air pressure",
+                        //   style: TextStyle(fontSize: 18),
+                        // ),
+                        Icon(Icons.compress),
                         Text(
                           "Humidity",
                           style: TextStyle(fontSize: 18),
                         ),
+                        // Icon(Icons.water_drop_outlined),
                         Text(
                           "Wind direction",
                           style: TextStyle(fontSize: 18),
                         ),
+                        // Icon(Icons.arrow_forward),
+                        Text(
+                          "Wind speed",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        // Icon(Icons.air),
                       ],
                     ),
                   ),
@@ -114,7 +126,7 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
                           style: const TextStyle(fontSize: 18),
                         ),
                         Text(
-                          "$_pressure hpa",
+                          "${_pressure.round()} hpa",
                           style: const TextStyle(fontSize: 18),
                         ),
                         Text(
@@ -123,6 +135,10 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
                         ),
                         Text(
                           _convertDegreesToText(_windDeg),
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        Text(
+                          "${_windSpeed.round()} m/s",
                           style: const TextStyle(fontSize: 18),
                         ),
                       ],
