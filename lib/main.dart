@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/widgets/page_container.dart';
+
+import './widgets/page_container.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +30,7 @@ class _MyAppState extends State<MyApp> {
     subscription = Connectivity()
         .onConnectivityChanged
         .listen((ConnectivityResult result) {
-      print(result);
+      // print(result);
     });
   }
 

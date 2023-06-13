@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:weather_app/models/weekly_weather_model.dart';
 
+import '../models/weekly_weather_model.dart';
 import '../models/daily_weather_model.dart';
 
 class WeatherService {
@@ -12,7 +11,7 @@ class WeatherService {
   static Future<DailyWeatherModel?> getWeatherByCity(String city) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&q=$city&APPID=$apiKey";
-    print(url);
+    // print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -22,11 +21,11 @@ class WeatherService {
         );
         return model;
       } else {
-        print("Error getting weather data");
+        // print("Error getting weather data");
         return null;
       }
     } catch (e, stacktrace) {
-      print("$e, $stacktrace");
+      // print("$e, $stacktrace");
       return null;
     }
   }
@@ -35,7 +34,7 @@ class WeatherService {
       double? lat, double? lon) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/weather?units=metric&lat=$lat&lon=$lon&appid=$apiKey";
-    print(url);
+    // print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -45,11 +44,11 @@ class WeatherService {
         );
         return model;
       } else {
-        print("Error getting weather data");
+        // print("Error getting weather data");
         return null;
       }
     } catch (e, stacktrace) {
-      print("$e, $stacktrace");
+      // print("$e, $stacktrace");
       return null;
     }
   }
@@ -57,19 +56,19 @@ class WeatherService {
   static Future<String?> getCityByCoords(double lat, double lon) async {
     final String url =
         "http://api.openweathermap.org/geo/1.0/reverse?lat=$lat&lon=$lon&appid=$apiKey";
-    print(url);
+    // print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        print(response.body);
+        // print(response.body);
         final data = jsonDecode(response.body)[0];
         return "${data["name"]}, ${data["country"]}";
       } else {
-        print("Error getting city name by coords");
+        // print("Error getting city name by coords");
         return null;
       }
     } catch (e, stacktrace) {
-      print("$e, $stacktrace");
+      // print("$e, $stacktrace");
       return null;
     }
   }
@@ -99,7 +98,7 @@ class WeatherService {
       double? lat, double? lon) async {
     final String url =
         "http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=$lat&lon=$lon&appid=$apiKey";
-    print(url);
+    // print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -109,11 +108,11 @@ class WeatherService {
             .toList();
         return models;
       } else {
-        print("Error getting weekly weather data");
+        // print("Error getting weekly weather data");
         return null;
       }
     } catch (e, stacktrace) {
-      print("$e, $stacktrace");
+      // print("$e, $stacktrace");
       return null;
     }
   }
@@ -121,7 +120,7 @@ class WeatherService {
   static Future<Map<String, double>?> getCoordsByCity(String city) async {
     final String url =
         "http://api.openweathermap.org/geo/1.0/direct?q=$city&appid=$apiKey";
-    print(url);
+    // print(url);
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -129,11 +128,11 @@ class WeatherService {
         if (data.isEmpty) return null;
         return {"lat": data[0]["lat"], "lon": data[0]["lon"]};
       } else {
-        print("Error getting coords by city");
+        // print("Error getting coords by city");
         return null;
       }
     } catch (e, stacktrace) {
-      print("$e, $stacktrace");
+      // print("$e, $stacktrace");
       return null;
     }
   }

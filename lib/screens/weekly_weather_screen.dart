@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
 
 import '../widgets/weekly_weather.dart';
 

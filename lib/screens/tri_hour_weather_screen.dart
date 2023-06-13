@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/screens/weekly_weather_screen.dart';
 
 import '../models/weekly_weather_model.dart';
+
 import '../widgets/weekly_weather.dart';
 
 class TriHourWeather extends StatefulWidget {
@@ -46,47 +46,3 @@ class _TriHourWeatherState extends State<TriHourWeather> {
     );
   }
 }
-
-// // child: NotificationListener<ScrollNotification>(
-// //   onNotification: (notification) {
-// //     if (notification
-// //             is ScrollUpdateNotification &&
-// //         _listScrollController.position.pixels ==
-// //             -1) {
-// //       _pageController.previousPage(
-// //           duration:
-// //               const Duration(milliseconds: 300),
-// //           curve: Curves.ease);
-// //     }
-// //     return false;
-// //   },
-//   child: ListView.builder(
-//     controller: _listScrollController,
-//     physics: const BouncingScrollPhysics(),
-//     // itemCount: _weeklyWeatherModel?.length,
-//     itemCount: _combinedWeatherModel
-//         ?.weeklyWeatherModel?.length,
-//     itemBuilder: (context, index) {
-//       String date = DateFormat("d.M").format(
-//           // _weeklyWeatherModel![index].dt!);
-//           _combinedWeatherModel!
-//               .weeklyWeatherModel![index].dt!);
-//       String time = DateFormat("HH:mm").format(
-//           // _weeklyWeatherModel![index].dt!);
-//           _combinedWeatherModel!
-//               .weeklyWeatherModel![index].dt!);
-//       String day = DateFormat("EEEE").format(
-//           // _weeklyWeatherModel![index].dt!);
-//           _combinedWeatherModel!
-//               .weeklyWeatherModel![index].dt!);
-//
-//       return Card(
-//         child: ListTile(
-//           title: Text("$date, $time"),
-//           subtitle: Text(day),
-//           // "${_weeklyWeatherModel?[index].dt_txt}"),
-//         ),
-//       );
-//     },
-//   ),
-// ),

@@ -10,14 +10,15 @@ import '../services/weather_service.dart';
 class SettingsScreen extends StatefulWidget {
   final bool locationPermission;
 
-  const SettingsScreen({Key? key, required this.locationPermission})
-      : super(key: key);
+  const SettingsScreen({Key? key, required this.locationPermission}) : super(key: key);
 
   @override
   State<SettingsScreen> createState() => _SettingsState();
 }
 
 class _SettingsState extends State<SettingsScreen> {
+  static const List<String> _availableLocales = ["English", "Finnish"];
+  String? _currentLocale;
   final TextEditingController _textFieldController = TextEditingController();
   late final bool _locationPermission = widget.locationPermission;
   String? _hometown;
@@ -29,11 +30,22 @@ class _SettingsState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _initPlatformState();
-    print("settingsInitState");
+    // print("settingsInitState");
+  }
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   void _initPlatformState() async {
+    // String locale = await Util.loadFromPrefs("locale");
+
     setState(() {
+      Util.loadFromPrefs("locale").then((value) => _currentLocale = value);
+      // _currentLocale = locale;
       _showTextfield = false;
     });
     _getHometown().then((value) async {
@@ -81,8 +93,7 @@ class _SettingsState extends State<SettingsScreen> {
   // }
 
   Future<String?> _getCurrentCityByPos() async {
-    Position pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     // print(pos);
     String? name = await WeatherService.getCityByCoords(pos.latitude, pos.longitude);
     return name;
@@ -135,8 +146,7 @@ class _SettingsState extends State<SettingsScreen> {
           onPressed: () {
             bool res = _allowRequest();
             if (res) {
-              WeatherService.getCoordsByCity(_textFieldController.text)
-                  .then((value) {
+              WeatherService.getCoordsByCity(_textFieldController.text).then((value) {
                 // print(value);
                 if (value != null) {
                   // Position pos = Position(
@@ -161,8 +171,7 @@ class _SettingsState extends State<SettingsScreen> {
                 _textFieldController.clear();
               });
             } else {
-              Util.showSnackBar(context,
-                  "Please wait $_allowRequestIn seconds between requests");
+              Util.showSnackBar(context, "Please wait $_allowRequestIn seconds between requests");
             }
           },
           icon: Icon(
@@ -182,8 +191,7 @@ class _SettingsState extends State<SettingsScreen> {
   }
 
   int get _allowRequestIn =>
-      _timeBetweenRequests -
-      DateTime.now().difference(_lastRequest ?? DateTime.now()).inSeconds;
+      _timeBetweenRequests - DateTime.now().difference(_lastRequest ?? DateTime.now()).inSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -211,16 +219,14 @@ class _SettingsState extends State<SettingsScreen> {
                         _dropDownHandler(value);
                       });
                     } else {
-                      Util.showSnackBar(context,
-                          "Please wait $_allowRequestIn seconds between requests");
+                      Util.showSnackBar(
+                          context, "Please wait $_allowRequestIn seconds between requests");
                     }
                   },
                   enabled: _locationPermission,
                 ),
                 ListTile(
-                  title: _showTextfield
-                      ? _searchTextField
-                      : const Text("Set your city"),
+                  title: _showTextfield ? _searchTextField : const Text("Set your city"),
                   leading: const Icon(
                     Icons.search,
                     color: Colors.blue,
@@ -249,6 +255,46 @@ class _SettingsState extends State<SettingsScreen> {
                 //     ),
                 //   ],
                 // ),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 6.0, left: 10.0, right: 10.0),
+          child: Card(
+            elevation: 8,
+            child: ExpansionTile(
+              title: const Text("Change language"),
+              leading: const Icon(
+                Icons.language,
+                color: Colors.blue,
+              ),
+              children: [
+                ..._availableLocales.map(
+                  (e) {
+                  // print(_currentLocale);
+                    return ListTile(
+                        // enabled: false,
+                        title: Text(e),
+                        leading: const Icon(
+                          Icons.short_text,
+                          color: Colors.blue,
+                        ),
+                        trailing: e != _currentLocale
+                            ? null
+                            : const Icon(
+                                Icons.fingerprint,
+                                color: Colors.green,
+                              ),
+                        onTap: () {
+                          setState(() {
+                            _currentLocale = e;
+                          });
+                          Util.saveToPrefs("locale", e);
+                          Util.showSnackBar(context, "Language set to: $e");
+                        });
+                  },
+                ),
               ],
             ),
           ),

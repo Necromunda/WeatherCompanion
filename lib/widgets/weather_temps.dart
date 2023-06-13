@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
 
 class WeatherTemperature extends StatelessWidget {
   final double temp, tempFeelsLike, tempMin, tempMax;

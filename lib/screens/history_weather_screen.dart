@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
-import 'package:weather_app/widgets/history_weather.dart';
 
-import '../models/daily_weather_model.dart';
+import '../models/combined_weather_model.dart';
+
+import '../widgets/history_weather.dart';
 
 class HistoryWeatherScreen extends StatelessWidget {
   // final Map<String, dynamic> weatherMap;

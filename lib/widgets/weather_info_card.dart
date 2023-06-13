@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
 
 class WeatherInfoCard extends StatefulWidget {
   final String iconUrl, weatherTypeDescription;
@@ -87,16 +86,16 @@ class _WeatherInfoCardState extends State<WeatherInfoCard> {
                       // crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: const [
-                        // Text(
-                        //   "Visibility",
-                        //   style: TextStyle(fontSize: 18),
-                        // ),
-                        Icon(Icons.visibility_outlined),
-                        // Text(
-                        //   "Air pressure",
-                        //   style: TextStyle(fontSize: 18),
-                        // ),
-                        Icon(Icons.compress),
+                        Text(
+                          "Visibility",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        // Icon(Icons.visibility_outlined),
+                        Text(
+                          "Air pressure",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        // Icon(Icons.compress),
                         Text(
                           "Humidity",
                           style: TextStyle(fontSize: 18),

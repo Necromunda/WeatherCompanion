@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
+
+import '../models/combined_weather_model.dart';
 
 import '../screens/weekly_weather_screen.dart';
-
-import '../models/weekly_weather_model.dart';
 
 class WeeklyWeatherShowcase extends StatelessWidget {
   // final List<WeeklyWeatherModel> weeklyWeather;

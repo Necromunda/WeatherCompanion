@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
 
-import '../models/daily_weather_model.dart';
+import '../models/combined_weather_model.dart';
+
 import '/screens/history_weather_screen.dart';
 
 class WeatherHistoryScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class _WeatherHistoryScreenState extends State<WeatherHistoryScreen>
   @override
   void initState() {
     super.initState();
-    print("weatherhistory initstate");
+    // print("weatherhistory initstate");
   }
 
   @override

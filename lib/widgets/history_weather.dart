@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
-import 'package:weather_app/models/daily_weather_model.dart';
-import 'package:weather_app/models/weekly_weather_model.dart';
-import 'package:weather_app/widgets/sun_times.dart';
-import 'package:weather_app/widgets/weather_info_card.dart';
-import 'package:weather_app/widgets/weather_temps.dart';
-import 'package:weather_app/widgets/weekly_weather_showcase.dart';
+
+import '/widgets/sun_times.dart';
+import '/widgets/weather_info_card.dart';
+import '/widgets/weather_temps.dart';
+import '/widgets/weekly_weather_showcase.dart';
+
+import '../models/combined_weather_model.dart';
 
 class HistoryWeather extends StatelessWidget {
   // final DailyWeatherModel dailyWeatherModel;
@@ -22,7 +22,7 @@ class HistoryWeather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuilding daily weather");
+    // print("rebuilding daily weather");
 
     return Column(
       children: [

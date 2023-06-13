@@ -1,20 +1,11 @@
-/* TODO
-Add possibility to see full weather from history
- */
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
-import 'package:weather_app/screens/tri_hour_weather_screen.dart';
 
-import '../util.dart';
-
-import '../services/weather_service.dart';
-
+import '../models/combined_weather_model.dart';
 import '../models/favorite_city_model.dart';
 import '../models/daily_weather_model.dart';
 import '../models/weekly_weather_model.dart';
@@ -24,6 +15,12 @@ import '../widgets/sun_times.dart';
 import '../widgets/weather_info_card.dart';
 import '../widgets/weather_temps.dart';
 import '../widgets/weekly_weather_showcase.dart';
+
+import '/screens/tri_hour_weather_screen.dart';
+
+import '../services/weather_service.dart';
+
+import '../util.dart';
 
 enum WeatherData { home, city, location }
 
@@ -80,7 +77,7 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
   void initState() {
     super.initState();
     _initPlatformState();
-    print("dailyweather initstate");
+    // print("dailyweather initstate");
   }
 
   void _initPlatformState() async {
@@ -404,7 +401,7 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
       }
       return parsedDates;
     } catch (e, stacktrace) {
-      print("$e, $stacktrace");
+      debugPrint("$e, $stacktrace");
       return null;
     }
   }
@@ -517,7 +514,7 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
         break;
       }
     }
-    print(parsedObjects);
+    // print(parsedObjects);
     for (int i = 0; i < uniques!.length; i++) {
       temp.clear();
       for (final obj in list) {
@@ -534,7 +531,7 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    print("rebuilding daily weather");
+    // print("rebuilding daily weather");
 
     // return !_locationPermission && _dailyWeatherModel == null
     return PageView(

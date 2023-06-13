@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-import 'package:weather_app/models/combined_weather_model.dart';
-
-import '../models/daily_weather_model.dart';
 
 import '../screens/history_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/weather_screen.dart';
+
+import '../models/combined_weather_model.dart';
 
 class PageContainer extends StatefulWidget {
   final bool locationPermission;

@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:weather_app/screens/weather_screen.dart';
-import 'package:weather_app/util.dart';
+
+import '../util.dart';
+
+import '../screens/weather_screen.dart';
 
 import '../models/favorite_city_model.dart';
 
@@ -103,7 +105,7 @@ class _SearchLocationWeatherState extends State<SearchLocationWeather> {
                         style: const TextStyle(fontSize: 20),
                       ),
                       children: [
-                        Container(
+                        SizedBox(
                           height: MediaQuery.of(context).size.height * 0.3,
                           child: ListView.builder(
                             shrinkWrap: true,
