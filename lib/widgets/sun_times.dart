@@ -6,20 +6,19 @@ import '../models/daily_weather_model.dart';
 
 class SunTimes extends StatelessWidget {
   final DailyWeatherModel weatherModel;
+
   // final CombinedWeatherModel combinedWeatherModel;
 
   const SunTimes({Key? key, required this.weatherModel})
-  // const SunTimes({Key? key, required this.combinedWeatherModel})
+      // const SunTimes({Key? key, required this.combinedWeatherModel})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String sunrise = DateFormat("HH:mm")
-        .format(weatherModel.sunrise!);
-        // .format(combinedWeatherModel.dailyWeatherModel!.sunrise!);
-    String sunset = DateFormat("HH:mm")
-        .format(weatherModel.sunset!);
-        // .format(combinedWeatherModel.dailyWeatherModel!.sunset!);
+    String sunrise = DateFormat("HH:mm").format(weatherModel.sunrise!);
+    // .format(combinedWeatherModel.dailyWeatherModel!.sunrise!);
+    String sunset = DateFormat("HH:mm").format(weatherModel.sunset!);
+    // .format(combinedWeatherModel.dailyWeatherModel!.sunset!);
     DateTime dt = DateTime.now();
 
     DateTime tillSunrise = DateTime(
@@ -29,7 +28,7 @@ class SunTimes extends StatelessWidget {
         weatherModel.sunrise!.hour,
         // combinedWeatherModel.dailyWeatherModel!.sunrise!.hour,
         weatherModel.sunrise!.minute);
-        // combinedWeatherModel.dailyWeatherModel!.sunrise!.minute);
+    // combinedWeatherModel.dailyWeatherModel!.sunrise!.minute);
     DateTime tillSunset = DateTime(
         dt.year,
         dt.month,
@@ -37,7 +36,7 @@ class SunTimes extends StatelessWidget {
         weatherModel.sunset!.hour,
         // combinedWeatherModel.dailyWeatherModel!.sunset!.hour,
         weatherModel.sunset!.minute);
-        // combinedWeatherModel.dailyWeatherModel!.sunset!.minute);
+    // combinedWeatherModel.dailyWeatherModel!.sunset!.minute);
 
     if (tillSunrise.isBefore(dt)) {
       tillSunrise = tillSunrise.add(const Duration(days: 1));

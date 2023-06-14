@@ -10,8 +10,7 @@ class HistoryWeatherScreen extends StatelessWidget {
   final CombinedWeatherModel combinedWeatherModel;
 
   // const HistoryWeatherScreen({Key? key, required this.weatherMap})
-  const HistoryWeatherScreen({Key? key, required this.combinedWeatherModel})
-      : super(key: key);
+  const HistoryWeatherScreen({Key? key, required this.combinedWeatherModel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +26,10 @@ class HistoryWeatherScreen extends StatelessWidget {
       ),
       appBar: AppBar(
         backgroundColor: const Color(0xFFDCB9FC),
-        title: const Text("Weather companion"),
+        title: const Text(
+          "Weather companion",
+          style: TextStyle(fontSize: 28),
+        ),
         centerTitle: true,
       ),
       body: HistoryWeather(

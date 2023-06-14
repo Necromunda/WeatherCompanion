@@ -77,6 +77,7 @@ class _PageContainerState extends State<PageContainer> {
             flex: 2,
             child: PageView(
               controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
               children: <Widget>[
                 SettingsScreen(
                   locationPermission: _locationPermission,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:weather_app/widgets/tri_hour_grid.dart';
 
 import '../models/combined_weather_model.dart';
 import '../models/favorite_city_model.dart';
@@ -535,7 +536,7 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
 
     // return !_locationPermission && _dailyWeatherModel == null
     return PageView(
-      scrollDirection: Axis.vertical,
+      // scrollDirection: Axis.vertical,
       controller: _pageController,
       children: [
         SearchLocationWeather(
@@ -554,82 +555,83 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
                 ? _loadingWeatherData
                 : Column(
                     children: [
-                      !_isCurrentWeatherSelected
-                          ? Expanded(
-                              flex: 3,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 5.0, top: 5.0, right: 5.0),
-                                child: GridView.count(
-                                  controller: _gridController,
-                                  physics: const BouncingScrollPhysics(),
-                                  addAutomaticKeepAlives: false,
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 5.0,
-                                  // mainAxisSpacing: 20.0,
-                                  children: List.generate(
-                                    _combinedWeatherModel!.parsedTriHourWeatherModel!.length,
-                                    (index) {
-                                      List<WeeklyWeatherModel>? list =
-                                          _combinedWeatherModel?.parsedTriHourWeatherModel![index];
-                                      if (list == null) const SizedBox();
-
-                                      String date = DateFormat("d.M").format(list!.first.dt!);
-                                      // String time = DateFormat("HH:mm").format(list.first.dt!);
-                                      String day = DateFormat("EEEE").format(list.first.dt!);
-
-                                      return GestureDetector(
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => TriHourWeather(
-                                              weeklyWeatherModel: list,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Card(
-                                          elevation: 11,
-                                          clipBehavior: Clip.antiAlias,
-                                          child: Container(
-                                            // height: 50,
-                                            // width: 150,
-                                            decoration: const BoxDecoration(
-                                              // gradient: RadialGradient(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  // Colors.yellow,
-                                                  // Colors.orangeAccent,
-                                                  // Colors.yellow.shade300,
-                                                  // Color(0xFFE0C3FC),
-                                                  Color(0xFFE0C3FC),
-                                                  Color(0xFF8EC5FC),
-                                                ],
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                              ),
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  day,
-                                                  style: const TextStyle(fontSize: 24),
-                                                ),
-                                                Text(
-                                                  date,
-                                                  style: const TextStyle(fontSize: 24),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Expanded(
+                      // !_isCurrentWeatherSelected
+                      //     ? Expanded(
+                      //         flex: 3,
+                      //         child: Padding(
+                      //           padding: const EdgeInsets.only(left: 5.0, top: 5.0, right: 5.0),
+                      //           child: GridView.count(
+                      //             controller: _gridController,
+                      //             physics: const BouncingScrollPhysics(),
+                      //             addAutomaticKeepAlives: false,
+                      //             crossAxisCount: 2,
+                      //             crossAxisSpacing: 5.0,
+                      //             // mainAxisSpacing: 20.0,
+                      //             children: List.generate(
+                      //               _combinedWeatherModel!.parsedTriHourWeatherModel!.length,
+                      //               (index) {
+                      //                 List<WeeklyWeatherModel>? list =
+                      //                     _combinedWeatherModel?.parsedTriHourWeatherModel![index];
+                      //                 if (list == null) const SizedBox();
+                      //
+                      //                 String date = DateFormat("d.M").format(list!.first.dt!);
+                      //                 // String time = DateFormat("HH:mm").format(list.first.dt!);
+                      //                 String day = DateFormat("EEEE").format(list.first.dt!);
+                      //
+                      //                 return GestureDetector(
+                      //                   onTap: () => Navigator.push(
+                      //                     context,
+                      //                     MaterialPageRoute(
+                      //                       builder: (context) => TriHourWeather(
+                      //                         weeklyWeatherModel: list,
+                      //                       ),
+                      //                     ),
+                      //                   ),
+                      //                   child: Card(
+                      //                     elevation: 11,
+                      //                     clipBehavior: Clip.antiAlias,
+                      //                     child: Container(
+                      //                       // height: 50,
+                      //                       // width: 150,
+                      //                       decoration: const BoxDecoration(
+                      //                         // gradient: RadialGradient(
+                      //                         gradient: LinearGradient(
+                      //                           colors: [
+                      //                             // Colors.yellow,
+                      //                             // Colors.orangeAccent,
+                      //                             // Colors.yellow.shade300,
+                      //                             // Color(0xFFE0C3FC),
+                      //                             Color(0xFFE0C3FC),
+                      //                             Color(0xFF8EC5FC),
+                      //                           ],
+                      //                           begin: Alignment.topCenter,
+                      //                           end: Alignment.bottomCenter,
+                      //                         ),
+                      //                       ),
+                      //                       child: Column(
+                      //                         mainAxisAlignment: MainAxisAlignment.center,
+                      //                         crossAxisAlignment: CrossAxisAlignment.center,
+                      //                         children: [
+                      //                           Text(
+                      //                             day,
+                      //                             style: const TextStyle(fontSize: 24),
+                      //                           ),
+                      //                           Text(
+                      //                             date,
+                      //                             style: const TextStyle(fontSize: 24),
+                      //                           ),
+                      //                         ],
+                      //                       ),
+                      //                     ),
+                      //                   ),
+                      //                 );
+                      //               },
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       )
+                      //     :
+                      Expanded(
                               flex: 3,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -755,7 +757,8 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
                                         pressure:
                                             _combinedWeatherModel!.dailyWeatherModel!.pressure!,
                                         windDeg: _combinedWeatherModel!.dailyWeatherModel!.windDeg!,
-                                        windSpeed: _combinedWeatherModel!.dailyWeatherModel!.windSpeed!,
+                                        windSpeed:
+                                            _combinedWeatherModel!.dailyWeatherModel!.windSpeed!,
                                       ),
                                       SunTimes(
                                         // combinedWeatherModel: _combinedWeatherModel!,
@@ -766,7 +769,7 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
                                 ],
                               ),
                             ),
-                      _doubleButton,
+                      // _doubleButton,
                       Expanded(
                         child: _combinedWeatherModel?.parsedWeeklyWeatherModel == null
                             ? Center(
@@ -780,6 +783,11 @@ class _WeatherState extends State<Weather> with AutomaticKeepAliveClientMixin<We
                       ),
                     ],
                   ),
+        _combinedWeatherModel == null
+            ? const Center(
+                child: Text("No data"),
+              )
+            : TriHourGrid(combinedWeatherModel: _combinedWeatherModel!)
       ],
     );
   }

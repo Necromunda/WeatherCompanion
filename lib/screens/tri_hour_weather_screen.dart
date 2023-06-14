@@ -32,7 +32,7 @@ class _TriHourWeatherState extends State<TriHourWeather> {
       ),
       appBar: AppBar(
         backgroundColor: const Color(0xFFDCB9FC),
-        title: const Text("Weather companion"),
+        title: const Text("Weather companion", style: TextStyle(fontSize: 28),),
         centerTitle: true,
       ),
       body: PageView(
