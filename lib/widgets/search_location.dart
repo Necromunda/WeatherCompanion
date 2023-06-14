@@ -59,76 +59,75 @@ class _SearchLocationWeatherState extends State<SearchLocationWeather> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 30.0),
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: Image.asset("assets/images/cloud_colored4.png"),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30.0),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: Image.asset("assets/images/cloud_colored4.png"),
+            ),
           ),
-        ),
-        GestureDetector(
-          onTap: () => _cityGestureHandler(),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Colors.black, width: 3.0),
-                bottom: BorderSide(color: Colors.black, width: 3.0),
+          GestureDetector(
+            onTap: () => _cityGestureHandler(),
+            child: Container(
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.black, width: 3.0),
+                  bottom: BorderSide(color: Colors.black, width: 3.0),
+                ),
+              ),
+              child: const Text(
+                "Tap to search",
+                style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
               ),
             ),
-            child: const Text(
-              "Tap to search",
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30.0),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: _favoriteCities.isEmpty
+                  ? null
+                  : Container(
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: Colors.black, width: 1.0),
+                          bottom: BorderSide(color: Colors.black, width: 1.0),
+                        ),
+                        // color: Color(0xFFE0C3FC),
+                      ),
+                      child: ExpansionTile(
+                        title: Text(
+                          "Favorites (${_favoriteCities.length}/5)",
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                        children: [
+                          // ...List.generate(10, (index) => const ListTile(title: Text("Title"),))
+                          ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _favoriteCities.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(
+                                  _favoriteCities[index].name ?? "",
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                // subtitle: Text(_favoriteCities[index].home.toString()),
+                                trailing: const Icon(Icons.search),
+                                onTap: () =>
+                                    _searchCallback(WeatherData.city, _favoriteCities[index].name),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 30.0),
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: _favoriteCities.isEmpty
-                ? null
-                : Container(
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        top: BorderSide(color: Colors.black, width: 1.0),
-                        bottom: BorderSide(color: Colors.black, width: 1.0),
-                      ),
-                      // color: Color(0xFFE0C3FC),
-                    ),
-                    child: ExpansionTile(
-                      title: Text(
-                        "Favorites (${_favoriteCities.length}/5)",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      children: [
-                        SizedBox(
-                          // height: MediaQuery.of(context).size.height * 0.3,
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: _favoriteCities.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  // shape: Border(bottom: BorderSide(color: Colors.black, width: 1.0),),
-                                  title: Text(
-                                    _favoriteCities[index].name ?? "",
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
-                                  // subtitle: Text(_favoriteCities[index].home.toString()),
-                                  trailing: const Icon(Icons.search),
-                                  onTap: () => _searchCallback(
-                                      WeatherData.city, _favoriteCities[index].name),
-                                );
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
